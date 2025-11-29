@@ -25,6 +25,7 @@ interface Resource {
   category: string;
   quark_link: string;
   created_at: string;
+  cover_url: string;
 }
 
 export default function AdminPage() {
