@@ -14,7 +14,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge"; // 如果报错，运行 npx shadcn@latest add badge，或者直接用 div 代替
+// import { Badge } from "@/components/ui/badge"; // 如果报错，运行 npx shadcn@latest add badge，或者直接用 div 代替
 
 interface Resource {
   id: number;
