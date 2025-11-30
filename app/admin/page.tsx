@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import Image from "next/image";
 import { supabase } from "@/src/lib/supabaseClient";
 import { toast } from "sonner"; // 引入新的提示组件
 
@@ -26,6 +27,8 @@ interface Resource {
   quark_link: string;
   created_at: string;
   cover_url: string;
+  baidu_link?: string;
+  xunlei_link?: string;
 }
 
 export default function AdminPage() {
@@ -40,6 +43,8 @@ export default function AdminPage() {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Cosplay"); // 默认分类
   const [quarkLink, setQuarkLink] = useState("");
+  const [baiduLink, setBaiduLink] = useState("");
+  const [xunleiLink, setXunleiLink] = useState("");
 
   const SECRET_CODE = "123456"; // 🔴 记得改成你自己的密码
 
@@ -79,7 +84,7 @@ export default function AdminPage() {
       toast.info("正在上传...");
       const fileName = `${Date.now()}-${file.name}`; // 生成唯一文件名
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("covers")
         .upload(fileName, file); // 👈 注意这里：直接传 file，不再是 compressedFile
 
@@ -91,11 +96,14 @@ export default function AdminPage() {
         .getPublicUrl(fileName);
 
       // 4. 写入数据库
+      // 在 insert 的时候加上这两个字段
       const { error: dbError } = await supabase.from("resources").insert({
-        title,
-        category,
-        quark_link: quarkLink,
-        cover_url: publicUrl,
+          title,
+          category,
+          quark_link: quarkLink,
+          baidu_link: baiduLink,   // 新增
+          xunlei_link: xunleiLink, // 新增
+          cover_url: publicUrl,
       });
 
       if (dbError) throw dbError;
@@ -111,10 +119,9 @@ export default function AdminPage() {
       if (fileInput) fileInput.value = "";
 
       fetchResources();
-
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      toast.error("上传失败: " + error.message);
+      toast.error("上传失败: " + (error instanceof Error ? error.message : "未知错误"));
     } finally {
       setLoading(false);
     }
@@ -199,6 +206,17 @@ export default function AdminPage() {
                 />
               </div>
 
+              {/* 百度网盘 */}
+              <div className="space-y-2">
+                <Label>百度网盘链接 (选填)</Label>
+                <Input placeholder="https://pan.baidu.com/..." value={baiduLink} onChange={(e) => setBaiduLink(e.target.value)} />
+              </div>
+              {/* 迅雷云盘 */}
+              <div className="space-y-2">
+                <Label>迅雷云盘链接 (选填)</Label>
+                <Input placeholder="https://pan.xunlei.com/..." value={xunleiLink} onChange={(e) => setXunleiLink(e.target.value)} />
+              </div>
+
               <div className="space-y-2">
                 <Label>封面图片</Label>
                 <Input
@@ -236,10 +254,13 @@ export default function AdminPage() {
                 {resources.map((res) => (
                   <TableRow key={res.id}>
                     <TableCell>
-                      <img
+                      <Image
                         src={res.cover_url}
+                        width={40}
+                        height={40}
                         className="w-10 h-10 object-cover rounded"
                         alt="封面"
+                        unoptimized
                       />
                     </TableCell>
                     <TableCell className="font-medium">{res.title}</TableCell>
