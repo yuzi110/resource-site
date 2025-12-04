@@ -7,7 +7,7 @@ import { Trash2, CheckCircle, MessageSquare, FileText, FolderOpen, Edit, X, Layo
 import dynamic from "next/dynamic";
 import "react-quill-new/dist/quill.snow.css";
 
-const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false }) as any;
 
 // UI 组件
 import { Button } from "@/components/ui/button";
