@@ -14,8 +14,7 @@ const nextConfig = {
     unoptimized: true, // 如果你没用 Next/Image 组件，这行可以不加，但加上保险
   },
 
-  // 🔥 3. 减少构建体积 (可选)
-  swcMinify: true,
+
 };
 
 export default nextConfig;
