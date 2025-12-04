@@ -148,7 +148,7 @@ export default function BlogPostPage() {
               onChange={(e) => setNickname(e.target.value)}
             />
             <Textarea
-              placeholder="友善发言，不仅限于番号..."
+              placeholder="友善发言，评论人工审核，请勿发表违规内容..."
               className="bg-white min-h-[80px]"
               value={commentContent}
               onChange={(e) => setCommentContent(e.target.value)}
