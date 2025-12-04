@@ -47,15 +47,32 @@ export default function Home() {
   const [openBannerDialog, setOpenBannerDialog] = useState<Banner | null>(null);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
 
+
   // 获取数据
   const fetchData = async (queryText = "") => {
     setLoading(true);
     try {
-      let resQuery = supabase.from("resources").select("*").order("id", { ascending: false });
-      if (queryText) resQuery = resQuery.ilike('title', `%${queryText}%`);
+      // 1. 获取资源 (🔥 核心修改：只查前 12 条)
+      let resQuery = supabase
+        .from("resources")
+        .select("*")
+        .order("id", { ascending: false })
+        .range(0, 11); // 👈 这里的 0-11 代表前 12 条，大大减少数据量！
+
+      if (queryText) {
+        // 如果是搜索，就不限制数量，或者限制前 50 条
+        resQuery = supabase
+          .from("resources")
+          .select("*")
+          .ilike('title', `%${queryText}%`)
+          .order("id", { ascending: false })
+          .limit(50);
+      }
+
       const { data: resData } = await resQuery;
       if (resData) setResources(resData);
 
+      // 2. 获取轮播图 (保持不变)
       if (!queryText) {
         const { data: bannerData } = await supabase.from("banners").select("*").order("created_at", { ascending: false });
         if (bannerData) setBanners(bannerData as any);
@@ -66,6 +83,7 @@ export default function Home() {
       setLoading(false);
     }
   };
+
 
   useEffect(() => { fetchData(); }, []);
 
