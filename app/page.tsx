@@ -1,16 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/src/lib/supabaseClient";
+import { toast } from "sonner";
+import useEmblaCarousel from 'embla-carousel-react';
+import Autoplay from "embla-carousel-autoplay";
+import { Bookmark, Share2, Megaphone, ExternalLink, Search, X, Loader2, Sparkles, BookOpen, FolderOpen, ArrowRight } from "lucide-react";
+import Link from "next/link";
+
+// UI 组件
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+// --- 类型定义 ---
 interface Resource {
   id: number;
   title: string;
@@ -19,158 +23,289 @@ interface Resource {
   quark_link: string;
   baidu_link?: string;
   xunlei_link?: string;
-  yidong_link?: string; // 新增移动云盘
+  yidong_link?: string;
 }
 
+interface Banner {
+  id: number;
+  image_url: string;
+  title: string;
+  type: 'link' | 'dialog' | 'resource';
+  link_url?: string;
+  dialog_content?: string;
+  resource_id?: number;
+}
 
 export default function Home() {
   const [resources, setResources] = useState<Resource[]>([]);
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    const fetchResources = async () => {
-      const { data, error } = await supabase
-        .from("resources")
-        .select("*")
-        .order("id", { ascending: false });
-      if (data) setResources(data);
+  // 轮播图状态
+  const [emblaRef] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 4000 })]);
+  const [openBannerDialog, setOpenBannerDialog] = useState<Banner | null>(null);
+  const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
+
+  // 获取数据
+  const fetchData = async (queryText = "") => {
+    setLoading(true);
+    try {
+      let resQuery = supabase.from("resources").select("*").order("id", { ascending: false });
+      if (queryText) resQuery = resQuery.ilike('title', `%${queryText}%`);
+      const { data: resData } = await resQuery;
+      if (resData) setResources(resData);
+
+      if (!queryText) {
+        const { data: bannerData } = await supabase.from("banners").select("*").order("created_at", { ascending: false });
+        if (bannerData) setBanners(bannerData as any);
+      }
+    } catch (error) {
+      toast.error("数据加载失败");
+    } finally {
       setLoading(false);
-    };
-    fetchResources();
+    }
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const handleSearch = (e?: React.FormEvent) => {
+    e?.preventDefault(); fetchData(searchQuery);
+  };
+
+  const handleBannerClick = async (banner: Banner) => {
+    if (banner.type === 'link' && banner.link_url) {
+      window.open(banner.link_url, '_blank');
+    } else if (banner.type === 'dialog') {
+      setOpenBannerDialog(banner);
+    } else if (banner.type === 'resource' && banner.resource_id) {
+      const found = resources.find(r => r.id === banner.resource_id);
+      if (found) {
+        setSelectedResource(found);
+      } else {
+        const { data } = await supabase.from("resources").select("*").eq("id", banner.resource_id).single();
+        if (data) setSelectedResource(data);
+      }
+    }
+  };
+
+  const handleShare = useCallback(async () => {
+    try { await navigator.clipboard.writeText(window.location.href); toast.success("链接已复制！"); } catch (err) {}
   }, []);
+  const handleBookmark = () => { toast.info("请按 Ctrl+D 收藏本站 ⭐"); };
 
   return (
-    <main className="min-h-screen bg-[#f8f9fa] pb-20">
-      {/* 顶部 Header */}
-      <div className="bg-white/80 backdrop-blur-md border-b sticky top-0 z-10 px-4 py-3 shadow-sm">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            严选资源站
-          </h1>
-          <div className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-            每日更新
+    <main className="min-h-screen bg-[#F3F4F6] pb-24 relative selection:bg-black selection:text-white">
+
+      {/* 1. Header (纯白底 + 黑色字，参考截图风格) */}
+      <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-30 px-4 py-3 shadow-sm">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex justify-between items-center w-full md:w-auto">
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.location.reload()}>
+              {/* 🔥 Logo 占位符：请在 public 文件夹放入 logo.png */}
+              <div className="h-8 w-auto flex items-center justify-center overflow-hidden">
+                 <img
+                   src="/logo.png"
+                   alt="Logo"
+                   className="h-full w-auto object-contain"
+                   onError={(e) => {
+                     // 如果没有图片，显示默认文字Logo
+                     e.currentTarget.style.display = 'none';
+                     e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                   }}
+                 />
+                 <div className="hidden font-black text-2xl tracking-tighter italic text-slate-900">
+                    LOGO
+                 </div>
+              </div>
+              <div className="h-4 w-[1px] bg-gray-300 mx-1"></div>
+              <span className="text-xs font-bold text-gray-500 tracking-widest uppercase">Premium</span>
+            </div>
+
+            <Link href="/blog" className="md:hidden">
+               <Button variant="ghost" size="sm" className="text-gray-600 hover:bg-gray-100 rounded-lg px-3">
+                 <BookOpen className="w-4 h-4 mr-1"/> 专栏
+               </Button>
+            </Link>
+          </div>
+
+          <div className="flex items-center gap-3 w-full md:max-w-md">
+            <form onSubmit={handleSearch} className="relative w-full group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-black transition-colors" />
+              <Input
+                type="search"
+                placeholder="搜索资源..."
+                className="pl-10 pr-4 h-10 bg-gray-100 border-transparent focus:bg-white focus:border-gray-300 focus:ring-2 focus:ring-black/5 rounded-xl w-full text-sm transition-all" // 🔥 圆角改为 xl
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </form>
+            <Link href="/blog" className="hidden md:flex flex-shrink-0">
+               <Button variant="ghost" className="text-gray-600 hover:bg-gray-100 hover:text-black font-medium rounded-xl"> {/* 🔥 圆角改为 xl */}
+                 <BookOpen className="w-4 h-4 mr-2"/> 精选专栏
+               </Button>
+            </Link>
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto p-3">
-        {loading ? (
-          <div className="text-center py-20 text-gray-400">资源加载中...</div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {resources.map((item) => (
-              <Dialog key={item.id}>
-                <DialogTrigger asChild>
-                  <div className="bg-white rounded-xl shadow-sm border overflow-hidden cursor-pointer active:scale-95 transition-all duration-200">
-                    {/* 图片区域 */}
-                    <div className="aspect-[3/4] relative bg-gray-100 overflow-hidden">
-                      <img
-                        src={item.cover_url}
-                        alt={item.title}
-                        className="w-full h-full object-cover object-top"
-                      />
-                      <div className="absolute top-1.5 right-1.5">
-                         <span className="bg-black/40 text-white text-[10px] px-1.5 py-0.5 rounded backdrop-blur-md">
-                           {item.category}
-                         </span>
-                      </div>
-                    </div>
+      <div className="max-w-6xl mx-auto p-4 space-y-8 mt-2">
 
-                    {/* 标题区域 */}
-                    <div className="p-2.5">
-                      <h2 className="text-[13px] font-medium text-gray-800 line-clamp-2 leading-snug h-[2.4em]">
-                        {item.title}
-                      </h2>
-                      <div className="mt-2.5 flex items-center justify-between">
-                         <span className="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-medium">
-                           点击查看
-                         </span>
-                         {/* 图标组 */}
-                         <div className="flex gap-1">
-                            {item.quark_link && <img src="https://img.icons8.com/color/48/cloud-folder.png" className="w-4 h-4" alt="夸克"/>}
-                            {item.baidu_link && <img src="https://img.icons8.com/color/48/baidu.png" className="w-4 h-4" alt="百度"/>}
-                         </div>
-                      </div>
-                    </div>
-                  </div>
-                </DialogTrigger>
+        {/* --- 2. 轮播图区域 (硬朗风格，去除大阴影) --- */}
+        {banners.length > 0 && (
+          <div className="rounded-xl overflow-hidden border border-gray-200 relative group z-0"> {/* 🔥 圆角改为 xl */}
+            <div className="overflow-hidden" ref={emblaRef}>
+              {/* ... 前面的代码不变 ... */}
+              <div className="flex">
+                {banners.map((banner) => (
+                  <div
+                    key={banner.id}
+                    // 🔥 核心修改 1:
+                    // 手机端 aspect-[21/10] (稍微高一点点，防止太扁看不清图)
+                    // PC端 aspect-[3/1] (完美适配 1200x400)
+                    className="flex-[0_0_100%] min-w-0 relative aspect-[3/1] cursor-pointer"
+                    onClick={() => handleBannerClick(banner)}
+                  >
+                    <img
+                      src={banner.image_url}
+                      alt={banner.title}
+                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                    />
 
-                {/* 🔥 关键修复点：
-                   1. flex flex-col: 垂直布局
-                   2. h-[80vh] 或 h-[85vh]: 固定高度
-                   3. 内部 ScrollArea 必须加 min-h-0，否则会被撑爆
-                */}
-                <DialogContent className="max-w-md w-[90%] rounded-2xl h-[85vh] flex flex-col p-0 gap-0 overflow-hidden outline-none bg-white">
+                    {/* 遮罩层：只在底部加黑色渐变，不遮挡中间 */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent pointer-events-none"></div>
 
-                  {/* Header: 固定 */}
-                  <div className="p-4 border-b bg-white z-20 flex-shrink-0">
-                    <DialogTitle className="text-base font-bold text-center line-clamp-1">
-                      {item.title}
-                    </DialogTitle>
-                  </div>
+                    {/* 🔥 核心修改 2: 移动端底栏布局 (一行显示) */}
+                    <div className="absolute bottom-0 left-0 w-full p-3 md:p-8 flex items-center justify-between gap-4">
 
-                  {/* Body: 核心修复 min-h-0 */}
-                  <ScrollArea className="flex-1 min-h-0 bg-gray-50 w-full">
-                    <div className="w-full">
-                      <img
-                        src={item.cover_url}
-                        alt="详情长图"
-                        className="w-full h-auto block"
-                      />
-                    </div>
-                  </ScrollArea>
+                        {/* 左侧：标题 (手机端字号变小 text-sm，限制一行) */}
+                        <h3 className="text-sm md:text-2xl font-bold text-white shadow-sm line-clamp-1 flex-1">
+                          {banner.title}
+                        </h3>
 
-                  {/* Footer: 固定在底部，加了 safe-area 适配 */}
-                  <div className="p-4 border-t bg-white z-20 flex-shrink-0 space-y-3 pb-8">
-                    {/* 夸克按钮 (最醒目) */}
-                    {item.quark_link && (
-                      <Button
-                        className="w-full bg-[#008aff] hover:bg-[#0076db] text-white font-bold h-11 rounded-xl shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
-                        onClick={() => window.open(item.quark_link, '_blank')}
-                      >
-                        <span>☁️ 保存到夸克网盘</span>
-                      </Button>
-                    )}
-
-                    {/* 其他网盘 (多列布局) */}
-                    <div className="grid grid-cols-2 gap-2">
-                      {item.baidu_link && (
-                        <Button
-                          variant="outline"
-                          className="w-full h-10 rounded-lg text-gray-700 border-blue-200 hover:bg-blue-50 text-xs"
-                          onClick={() => window.open(item.baidu_link, '_blank')}
-                        >
-                          百度网盘
-                        </Button>
-                      )}
-                      {item.xunlei_link && (
-                        <Button
-                          variant="outline"
-                          className="w-full h-10 rounded-lg text-gray-700 border-blue-200 hover:bg-blue-50 text-xs"
-                          onClick={() => window.open(item.xunlei_link, '_blank')}
-                        >
-                          迅雷云盘
-                        </Button>
-                      )}
-                      {/* 移动云盘 (如果有) */}
-                      {item.yidong_link && (
-                        <Button
-                          variant="outline"
-                          className="w-full h-10 rounded-lg text-gray-700 border-blue-200 hover:bg-blue-50 text-xs"
-                          onClick={() => window.open(item.yidong_link, '_blank')}
-                        >
-                          移动云盘
-                        </Button>
-                      )}
+                        {/* 右侧：按钮 (手机端极简模式) */}
+                        <div className="flex-shrink-0 inline-flex items-center gap-1.5 bg-white text-black px-2.5 py-1 md:px-4 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold hover:bg-gray-100 transition-colors">
+                          {/* 手机端文案简化，PC端显示全称 */}
+                          <span className="md:hidden">
+                            {banner.type === 'link' && 'GO'}
+                            {banner.type === 'dialog' && '看公告'}
+                            {banner.type === 'resource' && '看资源'}
+                          </span>
+                          <span className="hidden md:inline">
+                            {banner.type === 'link' && '点击跳转'}
+                            {banner.type === 'dialog' && '查看公告'}
+                            {banner.type === 'resource' && '获取资源'}
+                          </span>
+                          <ArrowRight className="w-3 h-3"/>
+                        </div>
                     </div>
                   </div>
-
-                </DialogContent>
-              </Dialog>
-            ))}
+                ))}
+              </div>
+              {/* ... 后面的代码不变 ... */}
+            </div>
           </div>
         )}
+
+        {/* --- 3. 资源列表 (极简黑白灰风格) --- */}
+        <div>
+          <div className="flex items-center gap-2 px-1 mb-4">
+             <div className="w-1 h-5 bg-black rounded-full"></div> {/* 装饰条 */}
+             <h2 className="text-base font-bold text-gray-900 tracking-tight">
+               {searchQuery ? `"${searchQuery}" 搜索结果` : "最新上架"}
+             </h2>
+          </div>
+
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 text-gray-400 gap-3"><Loader2 className="w-8 h-8 animate-spin text-gray-900" /><p className="text-sm">加载中...</p></div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 z-0">
+              {resources.map((item) => (
+                <Dialog key={item.id}>
+                  <DialogTrigger asChild>
+                    <div className="group bg-white rounded-xl border border-gray-200 overflow-hidden cursor-pointer hover:shadow-xl hover:shadow-gray-200/50 hover:-translate-y-1 transition-all duration-300"> {/* 🔥 圆角改为 xl */}
+                      <div className="aspect-[3/4] relative bg-gray-100 overflow-hidden">
+                        <img src={item.cover_url} alt={item.title} className="w-full h-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-105" />
+                        <div className="absolute top-2 right-2">
+                           {/* 标签风格：黑底白字，高级感 */}
+                           <span className="bg-black/80 backdrop-blur text-white text-[10px] font-medium px-2 py-1 rounded-md">
+                             {item.category}
+                           </span>
+                        </div>
+                      </div>
+                      <div className="p-3.5">
+                        <h2 className="text-[14px] font-bold text-gray-900 line-clamp-2 leading-snug h-[2.6em] group-hover:text-black transition-colors">
+                          {item.title}
+                        </h2>
+                        <div className="mt-3 flex items-center justify-between pt-2 border-t border-gray-100">
+                           <span className="text-[11px] font-medium text-gray-400 bg-gray-50 px-2 py-0.5 rounded">查看详情</span>
+                           <div className="flex gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
+                              {/* 图标保持原色，但在黑白主题下很显眼 */}
+                              {item.quark_link && <img src="https://img.icons8.com/color/48/cloud-folder.png" className="w-4 h-4" alt="夸克"/>}
+                              {item.baidu_link && <img src="https://img.icons8.com/color/48/baidu.png" className="w-4 h-4" alt="百度"/>}
+                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  </DialogTrigger>
+
+                  {/* 详情弹窗 (圆角 xl, 按钮黑色) */}
+                  <DialogContent className="max-w-md w-[90%] rounded-xl h-[85vh] flex flex-col p-0 gap-0 overflow-hidden outline-none bg-white shadow-2xl border-0"> {/* 🔥 圆角改为 xl */}
+                    <DialogClose className="absolute right-4 top-4 z-50 rounded-full bg-black/50 text-white p-2 hover:bg-black transition-colors backdrop-blur-sm">
+                      <X className="w-4 h-4" />
+                    </DialogClose>
+                    <div className="p-5 border-b border-gray-100 bg-white z-20 flex-shrink-0 pt-12 relative">
+                      <DialogTitle className="text-lg font-bold text-center line-clamp-1 text-gray-900">{item.title}</DialogTitle>
+                    </div>
+                    <ScrollArea className="flex-1 min-h-0 bg-gray-50 w-full"><div className="w-full"><img src={item.cover_url} alt="详情" className="w-full h-auto block" /></div></ScrollArea>
+                    <div className="p-5 border-t border-gray-100 bg-white z-20 flex-shrink-0 space-y-3 pb-8">
+                      {/* 主按钮：纯黑风格，参考截图 */}
+                      {item.quark_link && <Button className="w-full bg-slate-900 hover:bg-black text-white font-bold h-12 rounded-xl shadow-lg shadow-gray-200" onClick={() => window.open(item.quark_link, '_blank')}><img src="https://img.icons8.com/color/48/cloud-folder.png" className="w-5 h-5 mr-2" />保存到夸克网盘</Button>}
+                      <div className="grid grid-cols-2 gap-3">
+                        {item.baidu_link && <Button variant="outline" className="w-full h-11 rounded-xl text-gray-700 border-gray-200 hover:bg-gray-50" onClick={() => window.open(item.baidu_link, '_blank')}>百度网盘</Button>}
+                        {item.xunlei_link && <Button variant="outline" className="w-full h-11 rounded-xl text-gray-700 border-gray-200 hover:bg-gray-50" onClick={() => window.open(item.xunlei_link, '_blank')}>迅雷云盘</Button>}
+                        {item.yidong_link && <Button variant="outline" className="w-full h-11 rounded-xl text-gray-700 border-gray-200 hover:bg-gray-50" onClick={() => window.open(item.yidong_link, '_blank')}>移动云盘</Button>}
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* 4. 悬浮按钮 (纯黑风格) */}
+      <div className="fixed bottom-8 left-6 z-40 flex flex-col gap-4">
+        <Button onClick={handleShare} className="w-12 h-12 rounded-full bg-white text-gray-900 border border-gray-200 shadow-xl hover:scale-110 transition-all p-0"><Share2 className="w-5 h-5" /></Button>
+        <Button onClick={handleBookmark} className="w-12 h-12 rounded-full bg-slate-900 text-white shadow-xl shadow-black/20 hover:scale-110 transition-all p-0"><Bookmark className="w-5 h-5 fill-current" /></Button>
+      </div>
+
+      {/* 公告弹窗 */}
+      <Dialog open={!!openBannerDialog} onOpenChange={(open) => !open && setOpenBannerDialog(null)}>
+        <DialogContent className="max-w-sm rounded-2xl z-50 border-0 shadow-2xl">
+          <div className="flex flex-col items-center pt-8 pb-4">
+            <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+              <Megaphone className="w-7 h-7 text-black" />
+            </div>
+            <DialogTitle className="text-center text-xl font-bold text-gray-900">
+              {openBannerDialog?.title}
+            </DialogTitle>
+
+            {/* 🔥 核心修改：使用 dangerouslySetInnerHTML 渲染富文本 */}
+            <div
+              className="w-full pt-4 px-4 text-gray-600 text-sm leading-relaxed prose prose-sm max-w-none prose-p:my-2 prose-strong:text-black prose-ul:text-left prose-ul:pl-5"
+              dangerouslySetInnerHTML={{ __html: (openBannerDialog as any)?.dialog_content || "" }}
+            />
+
+          </div>
+          <div className="flex justify-center pb-8">
+            <Button onClick={() => setOpenBannerDialog(null)} className="rounded-full px-12 h-11 bg-black text-white hover:bg-gray-800 font-bold">
+              朕知道了
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
