@@ -14,9 +14,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       {/* 去掉了 inter.className，直接用默认字体，没有任何影响 */}
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <Toaster />
       </body>
