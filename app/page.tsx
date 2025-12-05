@@ -5,7 +5,7 @@ import { supabase } from "@/src/lib/supabaseClient";
 import { toast } from "sonner";
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from "embla-carousel-autoplay";
-import { Bookmark, Share2, Megaphone, ExternalLink, Search, X, Loader2, Sparkles, BookOpen, ArrowRight } from "lucide-react";
+import { Bookmark, Share2, Megaphone, ExternalLink, Search, X, Loader2, Sparkles, BookOpen, ArrowRight, Smartphone } from "lucide-react";
 import Link from "next/link";
 
 // UI 组件
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { WxOpenGuide } from "@/components/WxOpenGuide";
 
 // --- 类型定义 ---
 interface Resource {
@@ -36,6 +37,40 @@ interface Banner {
   resource_id?: number;
 }
 
+// 兼容性更好的复制函数 (支持 HTTP 环境)
+const copyToClipboard = async (text: string) => {
+  try {
+    // 优先尝试现代 API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+    throw new Error("Clipboard API unavailable");
+  } catch (err) {
+    // 回退方案：使用 document.execCommand
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+
+      // 确保 textarea 不可见但由于 focus 需要在可视区域内（其实 fixed 到屏幕外即可）
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      textArea.style.top = "0";
+      document.body.appendChild(textArea);
+
+      textArea.focus();
+      textArea.select();
+
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return successful;
+    } catch (fallbackErr) {
+      console.error("Copy failed:", fallbackErr);
+      return false;
+    }
+  }
+};
+
 export default function Home() {
   const [resources, setResources] = useState<Resource[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
@@ -46,6 +81,44 @@ export default function Home() {
   const [emblaRef] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 4000 })]);
   const [openBannerDialog, setOpenBannerDialog] = useState<Banner | null>(null);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
+
+  // 微信检测与引导
+  const [isWeChat, setIsWeChat] = useState(false);
+  const [showWxGuide, setShowWxGuide] = useState(false);
+  // 添加到桌面引导
+  const [showAddToHome, setShowAddToHome] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false); // 解决 Hydration Error
+
+  useEffect(() => {
+    setMounted(true);
+    const ua = navigator.userAgent.toLowerCase();
+    // 检测是否在微信内
+    if (ua.match(/MicroMessenger/i)) {
+      setIsWeChat(true);
+    }
+    // 检测是否是移动端
+    if (/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua)) {
+      setIsMobile(true);
+    }
+  }, []);
+
+  // 通用外链处理函数
+  const handleOpenLink = async (url: string) => {
+    if (isWeChat) {
+      // 如果在微信内：复制链接并弹窗
+      const success = await copyToClipboard(url);
+      if (success) {
+        toast.success("链接已复制，请在浏览器打开");
+      } else {
+        toast.success("请点击右上角，选择在浏览器打开"); // 即使复制失败也提示引导
+      }
+      setShowWxGuide(true);
+    } else {
+      // 正常环境：直接打开
+      window.open(url, '_blank');
+    }
+  };
 
   // 获取数据
   const fetchData = async (queryText = "") => {
@@ -83,7 +156,7 @@ export default function Home() {
   const handleBannerClick = async (banner: Banner) => {
     console.log("Banner Clicked:", banner); // 调试用
     if (banner.type === 'link' && banner.link_url) {
-      window.open(banner.link_url, '_blank');
+      handleOpenLink(banner.link_url);
     } else if (banner.type === 'dialog') {
       setOpenBannerDialog(banner);
     } else if (banner.type === 'resource' && banner.resource_id) {
@@ -100,9 +173,15 @@ export default function Home() {
     }
   };
 
-  const handleShare = useCallback(async () => {
-    try { await navigator.clipboard.writeText(window.location.href); toast.success("链接已复制！"); } catch (err) {}
-  }, []);
+  const handleShare = async () => {
+    const success = await copyToClipboard(window.location.href);
+    if (success) {
+      toast.success("链接已复制！");
+    } else {
+      toast.error("复制失败");
+    }
+  };
+
   const handleBookmark = () => { toast.info("请按 Ctrl+D 收藏本站 ⭐"); };
 
   return (
@@ -236,8 +315,40 @@ export default function Home() {
       {/* 4. 悬浮按钮 */}
       <div className="fixed bottom-8 left-6 z-40 flex flex-col gap-4">
         <Button onClick={handleShare} className="w-12 h-12 rounded-full bg-white text-gray-900 border border-gray-200 shadow-xl hover:scale-110 transition-all p-0"><Share2 className="w-5 h-5" /></Button>
-        <Button onClick={handleBookmark} className="w-12 h-12 rounded-full bg-slate-900 text-white shadow-xl shadow-black/20 hover:scale-110 transition-all p-0"><Bookmark className="w-5 h-5 fill-current" /></Button>
+        {mounted && isMobile ? (
+           <Button onClick={() => setShowAddToHome(true)} className="w-12 h-12 rounded-full bg-slate-900 text-white shadow-xl shadow-black/20 hover:scale-110 transition-all p-0">
+             <Smartphone className="w-5 h-5" />
+           </Button>
+        ) : (
+           <Button onClick={handleBookmark} className="w-12 h-12 rounded-full bg-slate-900 text-white shadow-xl shadow-black/20 hover:scale-110 transition-all p-0"><Bookmark className="w-5 h-5 fill-current" /></Button>
+        )}
       </div>
+
+      <WxOpenGuide open={showWxGuide} onClose={() => setShowWxGuide(false)} />
+
+      {/* 添加到桌面教程弹窗 */}
+      <Dialog open={showAddToHome} onOpenChange={setShowAddToHome}>
+        <DialogContent className="max-w-xs rounded-2xl">
+          <DialogTitle className="text-center text-lg font-bold">添加到手机桌面</DialogTitle>
+          <div className="space-y-4 pt-2">
+             <div className="flex items-start gap-3">
+               <div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold shrink-0">1</div>
+               <p className="text-sm text-gray-600">点击浏览器底部/顶部的分享按钮 <Share2 className="w-4 h-4 inline mx-1"/></p>
+             </div>
+             <div className="flex items-start gap-3">
+               <div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold shrink-0">2</div>
+               <p className="text-sm text-gray-600">在菜单中找到并点击“添加到主屏幕”或“添加到桌面”</p>
+             </div>
+             <div className="flex items-start gap-3">
+               <div className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold shrink-0">3</div>
+               <p className="text-sm text-gray-600">点击右上角“添加”，即可像APP一样从桌面打开</p>
+             </div>
+          </div>
+          <div className="flex justify-center pt-4">
+             <Button onClick={() => setShowAddToHome(false)} variant="outline" className="rounded-full px-8">学会了</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* 🔥 优化的资源弹窗 (这里修改了样式) */}
       <Dialog open={!!selectedResource} onOpenChange={(open) => !open && setSelectedResource(null)}>
@@ -262,11 +373,11 @@ export default function Home() {
             </ScrollArea>
 
             <div className="p-4 border-t border-gray-100 bg-white z-20 flex-shrink-0 space-y-3 pb-6">
-              {selectedResource.quark_link && <Button className="w-full bg-slate-900 hover:bg-black text-white font-bold h-11 rounded-xl shadow-md" onClick={() => window.open(selectedResource.quark_link, '_blank')}><img src="https://img.icons8.com/color/48/cloud-folder.png" className="w-5 h-5 mr-2" />保存到夸克网盘</Button>}
+              {selectedResource.quark_link && <Button className="w-full bg-slate-900 hover:bg-black text-white font-bold h-11 rounded-xl shadow-md" onClick={() => handleOpenLink(selectedResource.quark_link)}><img src="https://img.icons8.com/color/48/cloud-folder.png" className="w-5 h-5 mr-2" />保存到夸克网盘</Button>}
               <div className="grid grid-cols-2 gap-3">
-                {selectedResource.baidu_link && <Button variant="outline" className="w-full h-10 rounded-xl text-gray-700 border-gray-200 hover:bg-gray-50" onClick={() => window.open(selectedResource.baidu_link, '_blank')}>百度网盘</Button>}
-                {selectedResource.xunlei_link && <Button variant="outline" className="w-full h-10 rounded-xl text-gray-700 border-gray-200 hover:bg-gray-50" onClick={() => window.open(selectedResource.xunlei_link, '_blank')}>迅雷云盘</Button>}
-                {selectedResource.yidong_link && <Button variant="outline" className="w-full h-10 rounded-xl text-gray-700 border-gray-200 hover:bg-gray-50" onClick={() => window.open(selectedResource.yidong_link, '_blank')}>移动云盘</Button>}
+                {selectedResource.baidu_link && <Button variant="outline" className="w-full h-10 rounded-xl text-gray-700 border-gray-200 hover:bg-gray-50" onClick={() => handleOpenLink(selectedResource.baidu_link!)}>百度网盘</Button>}
+                {selectedResource.xunlei_link && <Button variant="outline" className="w-full h-10 rounded-xl text-gray-700 border-gray-200 hover:bg-gray-50" onClick={() => handleOpenLink(selectedResource.xunlei_link!)}>迅雷云盘</Button>}
+                {selectedResource.yidong_link && <Button variant="outline" className="w-full h-10 rounded-xl text-gray-700 border-gray-200 hover:bg-gray-50" onClick={() => handleOpenLink(selectedResource.yidong_link!)}>移动云盘</Button>}
               </div>
             </div>
           </DialogContent>
