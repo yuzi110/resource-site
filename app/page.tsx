@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/src/lib/supabaseClient";
 import { toast } from "sonner";
 import useEmblaCarousel from 'embla-carousel-react';
@@ -77,6 +77,12 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // 分页状态
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const loaderRef = useRef<HTMLDivElement>(null);
+
   // 轮播图状态
   const [emblaRef] = useEmblaCarousel({ loop: true }, [Autoplay({ delay: 4000 })]);
   const [openBannerDialog, setOpenBannerDialog] = useState<Banner | null>(null);
@@ -123,16 +129,30 @@ export default function Home() {
   // 获取数据
   const fetchData = async (queryText = "") => {
     setLoading(true);
+    // 重置分页状态
+    setPage(0);
+    setHasMore(true);
+
     try {
-      // 1. 获取资源 (限制前12条，优化速度)
-      let resQuery = supabase.from("resources").select("*").order("id", { ascending: false }).range(0, 11);
+      // 1. 获取资源
+      let resQuery = supabase.from("resources").select("*").order("id", { ascending: false });
 
       if (queryText) {
-        resQuery = supabase.from("resources").select("*").ilike('title', `%${queryText}%`).order("id", { ascending: false }).limit(50);
+        // 搜索模式 (一次性获取50条)
+        resQuery = resQuery.ilike('title', `%${queryText}%`).limit(50);
+      } else {
+        // 默认模式：第一页 (0-11)
+        resQuery = resQuery.range(0, 11);
       }
 
       const { data: resData } = await resQuery;
-      if (resData) setResources(resData);
+      if (resData) {
+        setResources(resData);
+        // 如果是默认模式且数据不满12条，说明没有更多了
+        if (!queryText && resData.length < 12) setHasMore(false);
+        // 搜索模式暂时不支持无限加载
+        if (queryText) setHasMore(false);
+      }
 
       // 2. 获取轮播图
       if (!queryText) {
@@ -145,6 +165,54 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  // 加载更多
+  const loadMore = async () => {
+    if (isLoadingMore || !hasMore || searchQuery) return;
+
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
+    const start = nextPage * 12;
+    const end = start + 11;
+
+    try {
+      const { data } = await supabase
+        .from("resources")
+        .select("*")
+        .order("id", { ascending: false })
+        .range(start, end);
+
+      if (data && data.length > 0) {
+        setResources((prev) => [...prev, ...data]);
+        setPage(nextPage);
+        if (data.length < 12) setHasMore(false);
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      toast.error("加载更多失败");
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
+
+  // 监听滚动到底部
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading && !isLoadingMore) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loaderRef.current) {
+      observer.observe(loaderRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasMore, loading, isLoadingMore, resources]); // 依赖 resources 确保在列表更新后重新检查
 
   useEffect(() => { fetchData(); }, []);
 
@@ -307,6 +375,21 @@ export default function Home() {
                     </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* 加载更多触发器 */}
+          {!loading && !searchQuery && (
+            <div ref={loaderRef} className="py-8 flex justify-center w-full">
+              {isLoadingMore ? (
+                <div className="flex items-center gap-2 text-gray-400 text-sm">
+                  <Loader2 className="w-5 h-5 animate-spin" /> 正在加载更多...
+                </div>
+              ) : hasMore ? (
+                  <div className="h-10 w-full"></div>
+              ) : (
+                <div className="text-gray-300 text-xs">— 到底了 —</div>
+              )}
             </div>
           )}
         </div>
