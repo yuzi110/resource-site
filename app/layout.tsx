@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 // 保留 Toaster 提示框组件
 import { Toaster } from "@/components/ui/sonner";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "严选资源站",
@@ -19,6 +20,17 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         {children}
         <Toaster />
+        <Script id="baidu-tongji" strategy="afterInteractive">
+          {`
+            var _hmt = _hmt || [];
+            (function() {
+              var hm = document.createElement("script");
+              hm.src = "https://hm.baidu.com/hm.js?096f32ede4a43503631c8742989d79ca";
+              var s = document.getElementsByTagName("script")[0];
+              s.parentNode.insertBefore(hm, s);
+            })();
+          `}
+        </Script>
       </body>
     </html>
   );
