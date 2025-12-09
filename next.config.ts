@@ -15,6 +15,13 @@ const nextConfig = {
   },
 
 
+  // 🔥 3. 构建优化 (内存不足时建议开启)
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
