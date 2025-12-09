@@ -18,6 +18,24 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       {/* 去掉了 inter.className，直接用默认字体，没有任何影响 */}
       <body suppressHydrationWarning>
+        <Script id="wx-redirect" strategy="beforeInteractive">
+          {`
+            (function() {
+              if (typeof window !== 'undefined') {
+                var ua = navigator.userAgent.toLowerCase();
+                var isWeChat = /micromessenger/i.test(ua);
+                var isQQ = /qq\\//i.test(ua) || /mqqbrowser/i.test(ua);
+                var isMiniProgram = /miniprogram/i.test(ua);
+
+                // 双重保险：如果是微信/QQ且不是小程序，且当前不在 guide.html 页面
+                if ((isWeChat || isQQ) && !isMiniProgram && window.location.pathname !== '/guide.html') {
+                  // 强制跳转
+                  window.location.href = '/guide.html?target=' + encodeURIComponent(window.location.pathname);
+                }
+              }
+            })();
+          `}
+        </Script>
         {children}
         <Toaster />
         <Script id="baidu-tongji" strategy="afterInteractive">
