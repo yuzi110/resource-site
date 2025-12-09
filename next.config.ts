@@ -11,7 +11,7 @@ const nextConfig = {
         hostname: '**', // 允许所有域名的图片
       },
     ],
-    unoptimized: true, // 如果你没用 Next/Image 组件，这行可以不加，但加上保险
+    // unoptimized: true, // 已移除，启用 Next.js 图片优化
   },
 
 

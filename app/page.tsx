@@ -7,6 +7,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from "embla-carousel-autoplay";
 import { Bookmark, Share2, Megaphone, ExternalLink, Search, X, Loader2, Sparkles, BookOpen, ArrowRight, Smartphone } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 // UI 组件
 import { Button } from "@/components/ui/button";
@@ -307,7 +308,14 @@ export default function Home() {
                     className="flex-[0_0_100%] min-w-0 relative aspect-[3/1] cursor-pointer"
                     onClick={() => handleBannerClick(banner)}
                   >
-                    <img src={banner.image_url} alt={banner.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" />
+                    <Image
+                      src={banner.image_url}
+                      alt={banner.title}
+                      fill
+                      priority={true}
+                      sizes="(max-width: 768px) 100vw, 1200px"
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent pointer-events-none"></div>
                     <div className="absolute bottom-0 left-0 w-full p-3 md:p-8 flex items-center justify-between gap-4">
                         {/* 左侧标题 */}
@@ -353,7 +361,13 @@ export default function Home() {
                 <div key={item.id} onClick={() => setSelectedResource(item)}>
                     <div className="group bg-white rounded-xl border border-gray-200 overflow-hidden cursor-pointer hover:shadow-xl hover:shadow-gray-200/50 hover:-translate-y-1 transition-all duration-300">
                       <div className="aspect-[3/4] relative bg-gray-100 overflow-hidden">
-                        <img src={item.cover_url} alt={item.title} className="w-full h-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-105" />
+                        <Image
+                          src={item.cover_url}
+                          alt={item.title}
+                          fill
+                          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                          className="object-cover object-top transition-transform duration-500 ease-out group-hover:scale-105"
+                        />
                         <div className="absolute top-2 right-2">
                            <span className="bg-black/80 backdrop-blur text-white text-[10px] font-medium px-2 py-1 rounded-md">
                              {item.category}
