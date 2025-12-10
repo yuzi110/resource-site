@@ -6,6 +6,8 @@ import Link from "next/link";
 import { ArrowLeft, Eye, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+import Image from "next/image";
+
 interface Article {
   id: number;
   title: string;
@@ -50,14 +52,16 @@ export default function BlogListPage() {
           <div className="text-center py-20 text-gray-400">暂无文章，敬请期待</div>
         ) : (
           articles.map((item) => (
-            <Link href={`/blog/${item.id}`} key={item.id}>
+            <Link href={`/blog/${item.id}`} key={item.id} className="block mb-4">
               <div className="bg-white rounded-xl shadow-sm border overflow-hidden hover:shadow-md transition-shadow cursor-pointer flex flex-col sm:flex-row h-auto sm:h-32">
                 {/* 封面图：移动端是大图，电脑端是左侧小图 */}
-                <div className="w-full sm:w-48 h-48 sm:h-full bg-gray-100 flex-shrink-0">
-                  <img
+                <div className="w-full sm:w-48 h-48 sm:h-full bg-gray-100 flex-shrink-0 relative">
+                  <Image
                     src={item.cover_url}
-                    className="w-full h-full object-cover"
                     alt={item.title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 100vw, 200px"
                   />
                 </div>
                 {/* 内容区 */}

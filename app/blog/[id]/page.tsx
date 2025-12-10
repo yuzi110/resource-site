@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+import Image from "next/image";
+
 interface Article {
   id: number;
   title: string;
@@ -18,6 +20,102 @@ interface Article {
   content: string;
   created_at: string;
   view_count: number;
+  designation?: string; // 🔥 番号字段
+}
+
+// 🔥 神秘按钮组件
+function MysteryButton({ code }: { code: string }) {
+  const [status, setStatus] = useState<'idle' | 'captcha' | 'revealed' | 'cooldown'>('idle');
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [captcha, setCaptcha] = useState({ a: 0, b: 0 });
+  const [answer, setAnswer] = useState("");
+  const [realCode, setRealCode] = useState(""); // 🔥 存储解密后的真番号
+
+  // 倒计时逻辑
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      if (status === 'revealed') setStatus('cooldown');
+      if (status === 'cooldown') setStatus('idle');
+      return;
+    }
+    const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft, status]);
+
+  const handleStart = () => {
+    setCaptcha({ a: Math.floor(Math.random() * 10) + 1, b: Math.floor(Math.random() * 10) + 1 });
+    setStatus('captcha');
+    setAnswer("");
+  };
+
+  const handleVerify = () => {
+    if (parseInt(answer) === captcha.a + captcha.b) {
+      // 🔥 验证通过时才解密 Base64
+      try {
+        const decoded = decodeURIComponent(atob(code));
+        setRealCode(decoded);
+        setStatus('revealed');
+        setTimeLeft(10); // 展示10秒
+        setTimeout(() => {
+          setStatus('cooldown');
+          setTimeLeft(60); // 冷却60秒
+        }, 10000);
+      } catch (e) {
+        toast.error("解码失败");
+      }
+    } else {
+      toast.error("算错啦，再试一次吧~");
+      handleStart();
+    }
+  };
+
+  if (status === 'idle') {
+    return (
+      <Button onClick={handleStart} variant="outline" className="w-full border-pink-200 text-pink-500 hover:bg-pink-50 hover:text-pink-600">
+        🔒 点击查看神秘代码
+      </Button>
+    );
+  }
+
+  if (status === 'captcha') {
+    return (
+      <div className="flex gap-2 items-center animate-in fade-in zoom-in duration-300">
+        <div className="bg-pink-50 px-3 py-2 rounded-md text-pink-600 font-mono font-bold text-sm select-none">
+          {captcha.a} + {captcha.b} = ?
+        </div>
+        <Input
+          className="w-20 text-center"
+          placeholder="答案"
+          autoFocus
+          value={answer}
+          onChange={(e) => setAnswer(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
+        />
+        <Button size="sm" onClick={handleVerify} className="bg-pink-500 hover:bg-pink-600 text-white">
+          确认
+        </Button>
+      </div>
+    );
+  }
+
+  if (status === 'revealed') {
+    return (
+      <div className="w-full bg-pink-100 border border-pink-200 rounded-lg p-4 text-center animate-in slide-in-from-top-2">
+        <p className="text-xs text-pink-400 mb-1">阅后即焚 ({timeLeft}s)</p>
+        <p className="text-2xl font-mono font-bold text-pink-600 select-all tracking-wider">{realCode}</p>
+      </div>
+    );
+  }
+
+  if (status === 'cooldown') {
+    return (
+      <Button disabled variant="secondary" className="w-full bg-gray-100 text-gray-400 cursor-not-allowed">
+        ⏳ 技能冷却中 ({timeLeft}s)
+      </Button>
+    );
+  }
+
+  return null;
 }
 
 interface Comment {
@@ -127,9 +225,17 @@ export default function BlogPostPage() {
 
           {/* HTML 内容渲染区 */}
           <div
-            className="prose prose-blue max-w-none prose-img:rounded-xl prose-img:w-full text-gray-700 leading-relaxed"
+            className="prose prose-blue max-w-none prose-img:!rounded-2xl prose-img:w-full text-gray-700 leading-relaxed"
             dangerouslySetInnerHTML={{ __html: article.content }}
           />
+
+          {/* 🔥 神秘代码区域 - 移至文章底部 */}
+          {article.designation && (
+            <div className="mt-8 mb-6">
+              {/* 🔥 服务端传给客户端前进行 Base64 编码混淆 */}
+          <MysteryButton code={btoa(encodeURIComponent(article.designation))} />
+            </div>
+          )}
         </article>
 
         <hr className="my-8 border-gray-100" />

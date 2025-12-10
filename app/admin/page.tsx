@@ -48,6 +48,7 @@ interface Article {
   content: string;
   created_at: string;
   status?: string;
+  designation?: string; // 🔥 类型定义
 }
 
 interface PendingComment {
@@ -86,6 +87,63 @@ export default function AdminPage() {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
 
+  // 图片上传助手状态
+  const [helperFile, setHelperFile] = useState<File | null>(null);
+  const [helperUrl, setHelperUrl] = useState("");
+  const [helperLoading, setHelperLoading] = useState(false);
+
+  const handleHelperUpload = async () => {
+    if (!helperFile) return;
+    setHelperLoading(true);
+    try {
+      const fileExt = helperFile.name.split('.').pop();
+      const fileName = `helper-${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      // 使用正确的 bucket 名称: 'covers'
+      const { error: uploadError } = await supabase.storage
+        .from('covers')
+        .upload(fileName, helperFile);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('covers')
+        .getPublicUrl(fileName);
+
+      setHelperUrl(publicUrl);
+      toast.success("上传成功！链接已生成");
+    } catch (error) {
+      console.error(error);
+      toast.error("上传失败");
+    } finally {
+      setHelperLoading(false);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("已复制到剪贴板");
+  };
+
+  const insertToEditor = (url: string) => {
+    if (!quillRef.current) {
+      toast.error("编辑器未就绪");
+      return;
+    }
+
+    // 🔥 关键优化：使用 Next.js Image Optimization API
+    // 这样插入富文本的图片，会通过 Next.js 服务器进行实时压缩和格式转换 (WebP)
+    // w=1080 限制最大宽度, q=75 是最佳画质/体积平衡点
+    const optimizedUrl = `/_next/image?url=${encodeURIComponent(url)}&w=1080&q=75`;
+
+    const editor = quillRef.current.getEditor();
+    const range = editor.getSelection();
+    const index = range ? range.index : editor.getLength();
+
+    // 插入优化后的 URL
+    editor.insertEmbed(index, "image", optimizedUrl);
+    toast.success("已插入压缩后的图片 ✅");
+  };
+
   // 资源表单
   const [resFile, setResFile] = useState<File | null>(null);
   const [resTitle, setResTitle] = useState("");
@@ -98,6 +156,7 @@ export default function AdminPage() {
 
   // 文章表单
   const [articleTitle, setArticleTitle] = useState("");
+  const [designation, setDesignation] = useState(""); // 🔥 新增番号字段
   const [articleContent, setArticleContent] = useState("");
   const [articleFile, setArticleFile] = useState<File | null>(null);
   const [editingArticleId, setEditingArticleId] = useState<number | null>(null);
@@ -223,6 +282,38 @@ export default function AdminPage() {
     ]
   }), []);
 
+  // 枫花恋演示文案填充
+  const fillKarenDemo = () => {
+    setArticleTitle("【严选鉴赏】枫花恋 (Kaede Karen) 封神回归：120分钟一镜到底，是噱头还是演技巅峰？");
+    setArticleContent(`
+<p>如果在业界要列一份“最让人意难平”的休业名单，<strong>枫花恋 (Kaede Karen)</strong> 的名字绝对在前三之列。</p>
+<p>作为“严选资源站”的站长，我阅片无数，但听到她回归的消息时，心里还是咯噔了一下。毕竟，“回归作”往往容易陷入两个极端：要么是敷衍了事的圈钱之作，要么是用力过猛的转型尝试。</p>
+<p>但这次，枫花恋交出了一份几乎满分的答卷。<strong>她没有选择保守的常规剧本，而是直接挑战了业界最高难度的——120分钟一镜到底（One Cut）。</strong></p>
+
+<h4>🎬 为什么说“120分钟长镜头”是疯了？</h4>
+<p>大家看片都知道，通常一部作品是由无数个镜头剪辑而成的。演员累了可以停，状态不好可以重来。</p>
+<p>但<strong>“一镜到底”意味着什么？</strong><br>这意味着整整两个小时，摄像机从不开机那一刻起就不能关。这不仅是对体力的魔鬼考验，更是对演员表情管理、情绪调动以及现场应变能力的极限挑战。只要中间有一秒钟的穿帮或尴尬，整段素材就废了。</p>
+<p>敢接这种企划，说明枫花恋这次是<strong>带着“野心”回来的</strong>。</p>
+
+<h4>👁️ 视觉冲击：不仅仅是时间的堆砌</h4>
+<p>很多打着“长镜头”旗号的作品，往往会让人觉得枯燥乏味。但这部新作的聪明之处在于节奏的把控。</p>
+<ul>
+<li><strong>前30分钟</strong>：她展现了久违的细腻演技，那种即使在长镜头下也毫无死角的颜值，让人不得不感叹：神颜依旧。</li>
+<li><strong>中段爆发</strong>：没有任何剪辑的修饰，汗水、喘息、皮肤的纹理，所有的反应都是最真实的生理反馈。这种<strong>“在场感”</strong>是普通作品无法比拟的。</li>
+<li><strong>结尾余韵</strong>：当倒计时结束的那一刻，你能通过屏幕感受到那种真实的力竭与释然。</li>
+</ul>
+
+<h4>💡 严选点评</h4>
+<p>对于<strong>LSP</strong>们来说，这部作品的收藏价值极高。它不再是快餐式的消耗品，而是一部值得你泡上一杯茶，戴上耳机，细细品味的“纪录片”。</p>
+<p>枫花恋用这部作品证明了：<strong>她依然是那个站在金字塔尖的顶级女优。</strong></p>
+<p>如果你厌倦了千篇一律的剪辑和表演，这部挑战极限的回归之作，绝对能唤醒你沉睡已久的视觉神经。</p>
+
+<p><strong>✅ 推荐指数：⭐⭐⭐⭐⭐</strong><br>
+<strong>🔥 关键词：</strong> #枫花恋 #KaedeKaren #回归新作 #长镜头 #严选资源</p>
+    `);
+    toast.success("文案已填充，请上传封面图后保存！");
+  };
+
   const handleArticleSubmit = async (status: 'published' | 'draft' = 'published') => {
     if (!articleTitle || !articleContent) return toast.warning("内容不完整");
     if (!editingArticleId && !articleFile) return toast.warning("请上传封面");
@@ -230,13 +321,13 @@ export default function AdminPage() {
     try {
       let coverUrl = "";
       if (articleFile) { const fileName = `art-${Date.now()}-${articleFile.name}`; const { error: upErr } = await supabase.storage.from("covers").upload(fileName, articleFile); if (upErr) throw upErr; coverUrl = supabase.storage.from("covers").getPublicUrl(fileName).data.publicUrl; }
-      const articleData = { title: articleTitle, content: articleContent, status, ...(coverUrl ? { cover_url: coverUrl } : {}), };
+      const articleData = { title: articleTitle, content: articleContent, status, designation, ...(coverUrl ? { cover_url: coverUrl } : {}), };
       if (editingArticleId) { await supabase.from("articles").update(articleData).eq("id", editingArticleId); toast.success(status === 'published' ? "更新并发布" : "草稿已保存"); } else { await supabase.from("articles").insert({ ...articleData, cover_url: coverUrl, view_count: 0 }); toast.success(status === 'published' ? "发布成功" : "草稿已保存"); }
       resetArticleForm(); fetchArticles();
     } catch (e: any) { toast.error("错误: " + e.message); } finally { setLoading(false); }
   };
-  const resetArticleForm = () => { setEditingArticleId(null); setArticleTitle(""); setArticleContent(""); setArticleFile(null); };
-  const handleEditArticle = (art: Article) => { setEditingArticleId(art.id); setArticleTitle(art.title); setArticleContent(art.content); setArticleFile(null); setIsVisualMode(true); articleFormRef.current?.scrollIntoView({ behavior: 'smooth' }); };
+  const resetArticleForm = () => { setEditingArticleId(null); setArticleTitle(""); setDesignation(""); setArticleContent(""); setArticleFile(null); };
+  const handleEditArticle = (art: Article) => { setEditingArticleId(art.id); setArticleTitle(art.title); setDesignation(art.designation || ""); setArticleContent(art.content); setArticleFile(null); setIsVisualMode(true); articleFormRef.current?.scrollIntoView({ behavior: 'smooth' }); };
   const handleDeleteArticle = async (id: number) => { if (!confirm("确定删除？")) return; await supabase.from("comments").delete().eq("article_id", id); await supabase.from("articles").delete().eq("id", id); fetchArticles(); toast.success("已删除"); if (editingArticleId === id) resetArticleForm(); };
   const recommendArticleToBanner = (art: Article) => { setActiveTab("banners"); setEditingBannerId(null); setBannerTitle(art.title); setBannerType("link"); setBannerLinkUrl(`/blog/${art.id}`); toast.info("已跳转轮播设置"); };
 
@@ -329,10 +420,67 @@ export default function AdminPage() {
       {/* TAB 2: 文章管理 */}
       {activeTab === 'articles' && (
         <div className="grid gap-8" ref={articleFormRef}>
+          {/* 🖼️ 图片上传助手 (新增) */}
+          <Card className="bg-blue-50 border-blue-100">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-blue-700 flex items-center gap-2">
+                <div className="p-1 bg-blue-200 rounded text-blue-700"><FolderOpen className="w-3 h-3" /></div>
+                图片上传助手 (获取 URL 插入正文)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-4 items-end">
+                <div className="flex-1 space-y-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    className="bg-white"
+                    onChange={(e) => setHelperFile(e.target.files?.[0] || null)}
+                  />
+                </div>
+                <Button
+                  onClick={handleHelperUpload}
+                  disabled={!helperFile || helperLoading}
+                  variant="secondary"
+                  className="bg-blue-200 text-blue-800 hover:bg-blue-300"
+                >
+                  {helperLoading ? "上传中..." : "上传并生成链接"}
+                </Button>
+              </div>
+
+              {helperUrl && (
+                <div className="mt-4 p-3 bg-white rounded border flex items-center justify-between gap-2">
+                  <code className="text-xs text-gray-500 break-all flex-1">{helperUrl}</code>
+                  <div className="flex gap-2 shrink-0">
+                    <Button
+                      size="sm"
+                      onClick={() => insertToEditor(helperUrl)}
+                      className="h-7 text-xs bg-blue-600 hover:bg-blue-700"
+                    >
+                      ⤵ 插入正文
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => copyToClipboard(helperUrl)}
+                      className="h-7 text-xs"
+                    >
+                      复制
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           <input type="file" accept="image/*" ref={hiddenFileInput} className="hidden" onChange={handleEditorImageUpload} />
           <Card className={editingArticleId ? "border-blue-500 shadow-md" : ""}>
-            <CardHeader className="flex flex-row justify-between items-center"><CardTitle className="flex items-center gap-2">{editingArticleId ? <><Edit className="w-5 h-5 text-blue-500"/> 修改文章</> : "✍️ 发布文章"}</CardTitle>{editingArticleId && <Button variant="ghost" size="sm" onClick={resetArticleForm} className="text-gray-500 gap-1"><X className="w-4 h-4"/> 取消编辑</Button>}</CardHeader>
-            <CardContent className="space-y-4"><Input value={articleTitle} onChange={(e) => setArticleTitle(e.target.value)} placeholder="标题" /><Input type="file" onChange={(e) => setArticleFile(e.target.files?.[0] || null)} /><div className="space-y-2">
+            <CardHeader className="flex flex-row justify-between items-center"><CardTitle className="flex items-center gap-2">{editingArticleId ? <><Edit className="w-5 h-5 text-blue-500"/> 修改文章</> : "✍️ 发布文章"} {!editingArticleId && <Button variant="outline" size="sm" onClick={fillKarenDemo} className="ml-4 text-xs border-pink-200 text-pink-600 hover:bg-pink-50">🌸 填入枫花恋文案</Button>}</CardTitle>{editingArticleId && <Button variant="ghost" size="sm" onClick={resetArticleForm} className="text-gray-500 gap-1"><X className="w-4 h-4"/> 取消编辑</Button>}</CardHeader>
+            <CardContent className="space-y-4">
+              <Input value={articleTitle} onChange={(e) => setArticleTitle(e.target.value)} placeholder="标题" />
+              <Input value={designation} onChange={(e) => setDesignation(e.target.value)} placeholder="神秘代码" className="border-pink-200 focus:border-pink-500" />
+              <Input type="file" onChange={(e) => setArticleFile(e.target.files?.[0] || null)} />
+              <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label>内容详情</Label>
                     <Button variant="outline" size="sm" onClick={toggleEditorMode} className="text-xs h-7">
