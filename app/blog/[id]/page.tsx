@@ -47,6 +47,7 @@ export default function BlogPostPage() {
         .from("articles")
         .select("*")
         .eq("id", id)
+        .eq("status", "published") // 🔥 确保草稿无法通过 URL 访问
         .single();
 
       if (data) {

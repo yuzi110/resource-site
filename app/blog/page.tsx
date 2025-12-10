@@ -23,6 +23,7 @@ export default function BlogListPage() {
       const { data } = await supabase
         .from("articles")
         .select("id, title, cover_url, created_at, view_count")
+        .eq("status", "published") // 🔥 只显示已发布的文章
         .order("created_at", { ascending: false });
       if (data) setArticles(data);
       setLoading(false);

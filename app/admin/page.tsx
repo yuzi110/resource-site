@@ -47,6 +47,7 @@ interface Article {
   cover_url: string;
   content: string;
   created_at: string;
+  status?: string;
 }
 
 interface PendingComment {
@@ -102,6 +103,11 @@ export default function AdminPage() {
   const [editingArticleId, setEditingArticleId] = useState<number | null>(null);
   const articleFormRef = useRef<HTMLDivElement>(null);
   const [isVisualMode, setIsVisualMode] = useState(true);
+
+  // 切换编辑器模式
+  const toggleEditorMode = () => {
+    setIsVisualMode(!isVisualMode);
+  };
 
   // 轮播图表单
   const [bannerTitle, setBannerTitle] = useState("");
@@ -203,7 +209,7 @@ export default function AdminPage() {
     } catch (error: any) { toast.error("失败: " + error.message, { id: toastId }); }
   };
   // 文章用的完整工具栏
-  const articleQuillModules = useMemo(() => ({ toolbar: { container: [[{ 'header': [1, 2, 3, false] }], ['bold', 'italic', 'underline', 'strike', 'blockquote'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], ['link', 'image'], ['clean']], handlers: { image: imageHandler } }, }), [imageHandler]);
+  const articleQuillModules = useMemo(() => ({ toolbar: { container: [[{ 'header': [1, 2, 3, false] }], ['bold', 'italic', 'underline', 'strike', 'blockquote'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], [{ 'align': [] }], ['link', 'image'], ['clean']], handlers: { image: imageHandler } }, }), [imageHandler]);
 
   // 🔥 公告用的简化工具栏 (无图片)
   const simpleQuillModules = useMemo(() => ({
@@ -212,19 +218,20 @@ export default function AdminPage() {
       ['bold', 'italic', 'underline'],
       [{ 'color': [] }, { 'background': [] }],
       [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'align': [] }],
       ['clean']
     ]
   }), []);
 
-  const handleArticleSubmit = async () => {
+  const handleArticleSubmit = async (status: 'published' | 'draft' = 'published') => {
     if (!articleTitle || !articleContent) return toast.warning("内容不完整");
     if (!editingArticleId && !articleFile) return toast.warning("请上传封面");
     setLoading(true);
     try {
       let coverUrl = "";
       if (articleFile) { const fileName = `art-${Date.now()}-${articleFile.name}`; const { error: upErr } = await supabase.storage.from("covers").upload(fileName, articleFile); if (upErr) throw upErr; coverUrl = supabase.storage.from("covers").getPublicUrl(fileName).data.publicUrl; }
-      const articleData = { title: articleTitle, content: articleContent, ...(coverUrl ? { cover_url: coverUrl } : {}), };
-      if (editingArticleId) { await supabase.from("articles").update(articleData).eq("id", editingArticleId); toast.success("更新成功"); } else { await supabase.from("articles").insert({ ...articleData, cover_url: coverUrl, view_count: 0 }); toast.success("发布成功"); }
+      const articleData = { title: articleTitle, content: articleContent, status, ...(coverUrl ? { cover_url: coverUrl } : {}), };
+      if (editingArticleId) { await supabase.from("articles").update(articleData).eq("id", editingArticleId); toast.success(status === 'published' ? "更新并发布" : "草稿已保存"); } else { await supabase.from("articles").insert({ ...articleData, cover_url: coverUrl, view_count: 0 }); toast.success(status === 'published' ? "发布成功" : "草稿已保存"); }
       resetArticleForm(); fetchArticles();
     } catch (e: any) { toast.error("错误: " + e.message); } finally { setLoading(false); }
   };
@@ -325,9 +332,36 @@ export default function AdminPage() {
           <input type="file" accept="image/*" ref={hiddenFileInput} className="hidden" onChange={handleEditorImageUpload} />
           <Card className={editingArticleId ? "border-blue-500 shadow-md" : ""}>
             <CardHeader className="flex flex-row justify-between items-center"><CardTitle className="flex items-center gap-2">{editingArticleId ? <><Edit className="w-5 h-5 text-blue-500"/> 修改文章</> : "✍️ 发布文章"}</CardTitle>{editingArticleId && <Button variant="ghost" size="sm" onClick={resetArticleForm} className="text-gray-500 gap-1"><X className="w-4 h-4"/> 取消编辑</Button>}</CardHeader>
-            <CardContent className="space-y-4"><Input value={articleTitle} onChange={(e) => setArticleTitle(e.target.value)} placeholder="标题" /><Input type="file" onChange={(e) => setArticleFile(e.target.files?.[0] || null)} /><div className="border p-2 min-h-[300px] rounded"><ReactQuill ref={quillRef} theme="snow" value={articleContent} onChange={setArticleContent} modules={articleQuillModules} className="bg-white h-[250px]"/></div><Button className={`w-full mt-8 ${editingArticleId ? "bg-blue-600 hover:bg-blue-700" : ""}`} onClick={handleArticleSubmit}>{editingArticleId ? "更新文章" : "发布文章"}</Button></CardContent>
-          </Card>
-          <Card><CardHeader><CardTitle>文章列表</CardTitle></CardHeader><CardContent><Table><TableHeader><TableRow><TableHead>标题</TableHead><TableHead className="text-right">操作</TableHead></TableRow></TableHeader><TableBody>{articles.map(art => (<TableRow key={art.id}><TableCell className="font-medium truncate max-w-[150px]">{art.title}</TableCell><TableCell className="text-right space-x-1"><Button variant="outline" size="sm" className="text-blue-600 border-blue-200" onClick={() => recommendArticleToBanner(art)}>📺 推</Button><Button variant="ghost" size="sm" onClick={() => handleEditArticle(art)}><Edit className="w-4 h-4 text-blue-500"/></Button><Button variant="ghost" size="sm" onClick={() => handleDeleteArticle(art.id)}><Trash2 className="w-4 h-4 text-red-500"/></Button></TableCell></TableRow>))}</TableBody></Table></CardContent></Card>
+            <CardContent className="space-y-4"><Input value={articleTitle} onChange={(e) => setArticleTitle(e.target.value)} placeholder="标题" /><Input type="file" onChange={(e) => setArticleFile(e.target.files?.[0] || null)} /><div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label>内容详情</Label>
+                    <Button variant="outline" size="sm" onClick={toggleEditorMode} className="text-xs h-7">
+                      {isVisualMode ? "</> 切换到源码模式" : "👁️ 切换到可视化模式"}
+                    </Button>
+                  </div>
+                  {isVisualMode ? (
+                    <ReactQuill
+                      ref={quillRef}
+                      theme="snow"
+                      value={articleContent}
+                      onChange={setArticleContent}
+                      modules={articleQuillModules}
+                      className="bg-white h-[400px] mb-12"
+                    />
+                  ) : (
+                    <div className="relative">
+                      <textarea
+                        className="w-full h-[400px] p-4 font-mono text-sm bg-gray-900 text-green-400 rounded-md focus:outline-none resize-y"
+                        value={articleContent}
+                        onChange={(e) => setArticleContent(e.target.value)}
+                        placeholder="在此粘贴 HTML 代码..."
+                      />
+                      <div className="absolute top-2 right-2 text-xs text-gray-500 select-none">HTML Source Mode</div>
+                     </div>
+                   )}
+                 </div><div className="flex gap-4 mt-8"><Button variant="outline" className="flex-1 border-gray-400 text-gray-600" onClick={() => handleArticleSubmit('draft')}>💾 存为草稿</Button><Button className={`flex-[2] ${editingArticleId ? "bg-blue-600 hover:bg-blue-700" : ""}`} onClick={() => handleArticleSubmit('published')}>{editingArticleId ? "更新并发布" : "🚀 立即发布"}</Button></div></CardContent>
+            </Card>
+          <Card><CardHeader><CardTitle>文章列表</CardTitle></CardHeader><CardContent><Table><TableHeader><TableRow><TableHead>标题</TableHead><TableHead className="text-right">操作</TableHead></TableRow></TableHeader><TableBody>{articles.map(art => (<TableRow key={art.id}><TableCell className="font-medium truncate max-w-[300px] md:max-w-[500px] flex items-center gap-2">{art.title}{art.status === 'draft' && <Badge variant="secondary" className="text-[10px] h-5 px-1 bg-yellow-100 text-yellow-800 hover:bg-yellow-200">草稿</Badge>}</TableCell><TableCell className="text-right space-x-1"><Button variant="outline" size="sm" className="text-blue-600 border-blue-200" onClick={() => recommendArticleToBanner(art)}>📺 推</Button><Button variant="ghost" size="sm" onClick={() => handleEditArticle(art)}><Edit className="w-4 h-4 text-blue-500"/></Button><Button variant="ghost" size="sm" onClick={() => handleDeleteArticle(art.id)}><Trash2 className="w-4 h-4 text-red-500"/></Button></TableCell></TableRow>))}</TableBody></Table></CardContent></Card>
         </div>
       )}
 

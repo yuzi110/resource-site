@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: "严选资源站 - 日韩女优介绍 | 高清资源合集 | 每日更新",
   description: "专注日韩女优人物介绍，提供最新、最全的高清资源合集转存。严选资源，拒绝滥竽充数。LSP的专属百科全书。",
   keywords: ["严选资源", "女优介绍", "资源合集", "夸克网盘资源", "高清图片", "日韩明星"],
+  verification: {
+    google: "syxWq0D6Ib0Q7nD7X3z4S3NRMoMp8UBfnUX_luh9fbs",
+  },
 };
 
 export default function RootLayout({
