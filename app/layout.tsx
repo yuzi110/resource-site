@@ -18,24 +18,30 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       {/* 去掉了 inter.className，直接用默认字体，没有任何影响 */}
       <body suppressHydrationWarning>
-        <Script id="wx-redirect" strategy="beforeInteractive">
-          {`
-            (function() {
-              if (typeof window !== 'undefined') {
-                var ua = navigator.userAgent.toLowerCase();
-                var isWeChat = /micromessenger/i.test(ua);
-                var isQQ = /qq\\//i.test(ua) || /mqqbrowser/i.test(ua);
-                var isMiniProgram = /miniprogram/i.test(ua);
+        {/* 暴力跳转脚本：直接用原生标签，不依赖 Next.js 加载机制 */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var ua = navigator.userAgent.toLowerCase();
+                  var isWeChat = /micromessenger/i.test(ua);
+                  var isQQ = /qq\\//i.test(ua) || /mqqbrowser/i.test(ua);
 
-                // 双重保险：如果是微信/QQ且不是小程序，且当前不在 guide.html 页面
-                if ((isWeChat || isQQ) && !isMiniProgram && window.location.pathname !== '/guide.html') {
-                  // 强制跳转
-                  window.location.href = '/guide.html?target=' + encodeURIComponent(window.location.pathname);
+                  // 调试模式：如果在微信里没跳，可能是被误判为小程序了，暂时去掉小程序判断
+                  // var isMiniProgram = /miniprogram/i.test(ua);
+
+                  // 只要是微信或QQ，且当前不在 guide.html，立刻跳转
+                  if ((isWeChat || isQQ) && window.location.pathname.indexOf('/guide.html') === -1) {
+                    window.location.href = '/guide.html?target=' + encodeURIComponent(window.location.pathname);
+                  }
+                } catch(e) {
+                  // 忽略错误，保证页面正常显示
                 }
-              }
-            })();
-          `}
-        </Script>
+              })();
+            `,
+          }}
+        />
         {children}
         <Toaster />
         <Script id="baidu-tongji" strategy="afterInteractive">
