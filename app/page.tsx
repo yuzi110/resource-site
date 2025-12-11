@@ -92,6 +92,7 @@ export default function Home() {
   const [showAddToHome, setShowAddToHome] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false); // 解决 Hydration Error
+  const [hasNewArticle, setHasNewArticle] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -100,6 +101,29 @@ export default function Home() {
     if (/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua)) {
       setIsMobile(true);
     }
+
+    // Check for new articles
+    const checkNewArticles = async () => {
+      try {
+        const { data } = await supabase
+          .from('articles')
+          .select('created_at')
+          .eq('status', 'published')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (data) {
+          const lastVisit = localStorage.getItem('last_blog_visit');
+          if (!lastVisit || new Date(data.created_at) > new Date(lastVisit)) {
+            setHasNewArticle(true);
+          }
+        }
+      } catch (e) {
+        // console.error("Failed to check new articles", e);
+      }
+    };
+    checkNewArticles();
   }, []);
 
   // 通用外链处理函数
@@ -257,10 +281,11 @@ export default function Home() {
               <div className="h-4 w-[1px] bg-gray-300 mx-1"></div>
               <span className="text-xs font-bold text-gray-500 tracking-widest uppercase">Premium</span>
             </div>
-            <Link href="/blog" className="md:hidden">
-               <Button variant="ghost" size="sm" className="text-gray-600 hover:bg-gray-100 rounded-lg px-3">
-                 <BookOpen className="w-4 h-4 mr-1"/> 专栏
+            <Link href="/blog" className="md:hidden relative">
+               <Button variant="ghost" size="sm" className={`text-gray-600 hover:bg-gray-100 rounded-lg px-3 ${hasNewArticle ? 'text-red-600 bg-red-50 hover:bg-red-100' : ''}`}>
+                 <BookOpen className={`w-4 h-4 mr-1 ${hasNewArticle ? 'text-red-500' : ''}`}/> 专栏
                </Button>
+               {hasNewArticle && <span className="absolute top-1 right-1 w-2 h-2 bg-red-600 rounded-full border border-white animate-pulse"></span>}
             </Link>
           </div>
           <div className="flex items-center gap-3 w-full md:max-w-md">
@@ -268,8 +293,11 @@ export default function Home() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-black transition-colors" />
               <Input type="search" placeholder="搜索资源..." className="pl-10 pr-4 h-10 bg-gray-100 border-transparent focus:bg-white focus:border-gray-300 focus:ring-2 focus:ring-black/5 rounded-xl w-full text-sm transition-all" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </form>
-            <Link href="/blog" className="hidden md:flex flex-shrink-0">
-               <Button variant="ghost" className="text-gray-600 hover:bg-gray-100 hover:text-black font-medium rounded-xl"> <BookOpen className="w-4 h-4 mr-2"/> 精选专栏 </Button>
+            <Link href="/blog" className="hidden md:flex flex-shrink-0 relative">
+               <Button variant="ghost" className={`font-medium rounded-xl ${hasNewArticle ? 'text-red-600 bg-red-50 hover:bg-red-100' : 'text-gray-600 hover:bg-gray-100 hover:text-black'}`}>
+                 <BookOpen className={`w-4 h-4 mr-2 ${hasNewArticle ? 'text-red-500' : ''}`}/> 精选专栏
+               </Button>
+               {hasNewArticle && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-600 rounded-full border-2 border-white animate-pulse"></span>}
             </Link>
           </div>
         </div>

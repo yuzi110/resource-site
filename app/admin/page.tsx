@@ -48,7 +48,9 @@ interface Article {
   content: string;
   created_at: string;
   status?: string;
-  designation?: string; // 🔥 类型定义
+  designation?: string;
+  category?: string;
+  is_pinned?: boolean;
 }
 
 interface PendingComment {
@@ -57,6 +59,7 @@ interface PendingComment {
   content: string;
   created_at: string;
   article_id: number;
+  parent_id?: number;
 }
 
 interface Banner {
@@ -81,6 +84,10 @@ export default function AdminPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [pendingComments, setPendingComments] = useState<PendingComment[]>([]);
+
+  // 文章编辑扩展状态
+  const [articleCategory, setArticleCategory] = useState("all");
+  const [articlePinned, setArticlePinned] = useState(false);
 
   // 分类状态
   const [categories, setCategories] = useState<Category[]>([]);
@@ -314,6 +321,75 @@ export default function AdminPage() {
     toast.success("文案已填充，请上传封面图后保存！");
   };
 
+  // SOD 演示文案填充
+  const fillSodDemo = () => {
+    setArticleTitle("【业界观察】SOD Star 断层危机？一宫留衣 x 天神羽衣“同期共演”背后的真相");
+    setArticleContent(`
+<p>最近业界有个很有意思的现象：Will集团（S1、Moodyz等）搞共演不稀奇，但向来特立独行的 <strong>SOD集团</strong> 这次也坐不住了。</p>
+<p>这次他们打出了一张“同期共演”的牌，主角是今年刚出道的两位超级新人：<strong>一宫留衣 (一宮るい)</strong> 和 <strong>天神羽衣</strong>。</p>
+
+<h4>🤔 为什么说这次共演很“反常”？</h4>
+<p>懂行的朋友都知道，通常片商不会让两个刚出道不到半年的新人（所谓“菜鸟”）直接搞共演。这种资源一般是留给有一定粉丝基础的中坚力量的。</p>
+<p>但 SOD Star 这次的操作，其实暴露了一个尴尬的现状：<strong>新生代断层。</strong></p>
+<ul>
+<li><strong>老牌天后</strong>：神木丽、星乃莉子这些“四小天后”都已经出道3年以上，该拍的题材都拍烂了，观众确实有点审美疲劳。</li>
+<li><strong>中生代隐身</strong>：出道两年的渚恋生等人至今没有共演，条件不错的彩月七绪又被放养。</li>
+</ul>
+<p>所以，与其说是“大胆启用新人”，不如说是 SOD <strong>被迫提前打出了这两张王牌</strong>。</p>
+
+<h4>🎬 1日SOD女子社员：熟悉的配方，新鲜的味道</h4>
+<p>虽然背景分析有点沉重，但回归作品本身，这次的企划还是挺有看点的。</p>
+<p>SOD 拿出了看家本领——<strong>“1日女子社员”企划</strong>。两位新人换上职场制服，体验普通社员的日常工作（开会、备料）。而既然是 SOD，肯定少不了那标志性的<strong>“隐形人（黑子）”</strong>设定。</p>
+<p><strong>看点提炼：</strong></p>
+<ol>
+<li><strong>反差萌</strong>：看着两位一本正经地在开会做笔记，旁边却有一堆蒙面男优在疯狂骚扰，这种强烈的“职场禁忌感”拉满。</li>
+<li><strong>忍耐力大挑战</strong>：天神羽衣的表现尤为亮眼，一边还在认真记录会议纪要，一边却因为受到攻击而身体颤抖，这种<strong>“想要维持专业形象却又控制不住生理反应”</strong>的演技，确实比单纯的叫床更有张力。</li>
+</ol>
+
+<h4>💡 严选点评</h4>
+<p>虽然我觉得这支作品少了点当年守屋芳乃那次共演的“蕾丝边”化学反应，气势上稍微弱了一些，但这不能怪女优。</p>
+<p><strong>一宫留衣的清纯</strong>加上<strong>天神羽衣的灵动</strong>，这对组合本身是非常养眼的。如果你喜欢 <strong>OL制服</strong>、<strong>职场凌辱</strong> 或者 <strong>羞耻Play</strong>，这部由两位顶级新人带来的“被迫营业”大戏，依然是近期不可多得的佳作。</p>
+
+<p><strong>✅ 推荐指数：⭐⭐⭐⭐</strong><br>
+<strong>🔥 关键词：</strong> #SOD #一宫留衣 #天神羽衣 #共演 #职场制服 #严选观察</p>
+    `);
+    toast.success("SOD文案已填充，请上传封面图后保存！");
+  };
+
+  // 爱才莉亚 演示文案填充
+  const fillAiseDemo = () => {
+    setArticleTitle("【严选鉴赏】(IPZZ-761) 出道一周年惨遭“下药”？爱才莉亚 (Aise Ria) 温泉旅行の真实记录");
+    setArticleContent(`
+<p>时间过得真快，转眼间 <strong>爱才莉亚 (愛才りあ)</strong> 已经出道一周年了。</p>
+<p>为了庆祝这个重要的里程碑，片商 Ideapocket (IP社) 特地为她安排了一场看似温馨的“温泉旅行”。比起隔壁棚濑户环奈那种和15位粉丝一起泡澡的“感谢祭”，爱才莉亚这次的待遇可谓是“冰火两重天”。</p>
+
+<h4>♨️ 温泉企划的背后：是惊喜还是惊吓？</h4>
+<p>表面上，这是片商为了奖励她一年来的辛勤工作，特意安排的放松之旅。但熟悉 IP社 尿性的老司机都知道，事情绝对没有这么简单。</p>
+<p><strong>这是一场精心策划的“狩猎”：</strong></p>
+<ul>
+<li><strong>第一步：卸下防备</strong>。舒适的温泉酒店，轻松的访谈氛围，让她完全放松警惕。</li>
+<li><strong>第二步：循序渐进</strong>。喝的热茶、按摩用的精油，都被“加了料”。</li>
+<li><strong>第三步：彻底崩坏</strong>。当她发现身体开始不受控制地燥热时，一切都已经晚了。</li>
+</ul>
+
+<h4>👁️ 演技还是真实反应？</h4>
+<p>这支作品最大的看点就在于<strong>“反差”</strong>。前一秒还是那个高挑、清纯、拥有 E 罩杯完美身材的“正统派偶像”，后一秒就在药物的作用下变成了只知道索取的“肉欲野兽”。</p>
+<p>虽然大家都知道这是剧本（毕竟在日本这是犯法的），但爱才莉亚的演技确实让人信服。那种<strong>从困惑、挣扎到最后彻底放弃理智、顺从欲望</strong>的过程，演绎得淋漓尽致。这种“被动堕落”的戏码，往往比主动出击更让人血脉喷张。</p>
+
+<h4>💡 严选点评：IP社的未来王牌</h4>
+<p>在桃乃木引退、明里紬移籍之后，IP社急需新的顶梁柱。而 <strong>爱才莉亚</strong> 无疑是目前的最佳人选之一。</p>
+<p>虽然她的社交媒体粉丝数还不够多，海外知名度也还有待拓展，但论外形条件和敬业程度，她绝对是妥妥的“次世代王牌”。这部一周年纪念作，更像是片商给她的一次“成人礼”，宣告她已经准备好迎接更大尺度的挑战了。</p>
+
+<p>如果你喜欢<strong>高挑美腿</strong>、<strong>温泉Play</strong>以及<strong>带有轻微强制色彩</strong>的剧情，这部作品绝对不容错过。</p>
+
+<p><strong>✅ 推荐指数：⭐⭐⭐⭐⭐</strong><br>
+<strong>🔥 关键词：</strong> #爱才莉亚 #AiseRia #IP社 #出道一周年 #温泉 #严选鉴赏</p>
+<p><strong>📌 番号：</strong> IPZZ-761<br>
+<strong>📅 发行日：</strong> 2026/01/13</p>
+    `);
+    toast.success("爱才莉亚文案已填充，请上传封面图后保存！");
+  };
+
   const handleArticleSubmit = async (status: 'published' | 'draft' = 'published') => {
     if (!articleTitle || !articleContent) return toast.warning("内容不完整");
     if (!editingArticleId && !articleFile) return toast.warning("请上传封面");
@@ -321,13 +397,41 @@ export default function AdminPage() {
     try {
       let coverUrl = "";
       if (articleFile) { const fileName = `art-${Date.now()}-${articleFile.name}`; const { error: upErr } = await supabase.storage.from("covers").upload(fileName, articleFile); if (upErr) throw upErr; coverUrl = supabase.storage.from("covers").getPublicUrl(fileName).data.publicUrl; }
-      const articleData = { title: articleTitle, content: articleContent, status, designation, ...(coverUrl ? { cover_url: coverUrl } : {}), };
+
+      const articleData = {
+        title: articleTitle,
+        content: articleContent,
+        status,
+        designation,
+        category: articleCategory,
+        is_pinned: articlePinned,
+        ...(coverUrl ? { cover_url: coverUrl } : {}),
+      };
+
       if (editingArticleId) { await supabase.from("articles").update(articleData).eq("id", editingArticleId); toast.success(status === 'published' ? "更新并发布" : "草稿已保存"); } else { await supabase.from("articles").insert({ ...articleData, cover_url: coverUrl, view_count: 0 }); toast.success(status === 'published' ? "发布成功" : "草稿已保存"); }
       resetArticleForm(); fetchArticles();
     } catch (e: any) { toast.error("错误: " + e.message); } finally { setLoading(false); }
   };
-  const resetArticleForm = () => { setEditingArticleId(null); setArticleTitle(""); setDesignation(""); setArticleContent(""); setArticleFile(null); };
-  const handleEditArticle = (art: Article) => { setEditingArticleId(art.id); setArticleTitle(art.title); setDesignation(art.designation || ""); setArticleContent(art.content); setArticleFile(null); setIsVisualMode(true); articleFormRef.current?.scrollIntoView({ behavior: 'smooth' }); };
+  const resetArticleForm = () => {
+    setEditingArticleId(null);
+    setArticleTitle("");
+    setDesignation("");
+    setArticleContent("");
+    setArticleFile(null);
+    setArticleCategory("all");
+    setArticlePinned(false);
+  };
+  const handleEditArticle = (art: Article) => {
+    setEditingArticleId(art.id);
+    setArticleTitle(art.title);
+    setDesignation(art.designation || "");
+    setArticleContent(art.content);
+    setArticleCategory(art.category || "all");
+    setArticlePinned(art.is_pinned || false);
+    setArticleFile(null);
+    setIsVisualMode(true);
+    articleFormRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
   const handleDeleteArticle = async (id: number) => { if (!confirm("确定删除？")) return; await supabase.from("comments").delete().eq("article_id", id); await supabase.from("articles").delete().eq("id", id); fetchArticles(); toast.success("已删除"); if (editingArticleId === id) resetArticleForm(); };
   const recommendArticleToBanner = (art: Article) => { setActiveTab("banners"); setEditingBannerId(null); setBannerTitle(art.title); setBannerType("link"); setBannerLinkUrl(`/blog/${art.id}`); toast.info("已跳转轮播设置"); };
 
@@ -475,10 +579,46 @@ export default function AdminPage() {
 
           <input type="file" accept="image/*" ref={hiddenFileInput} className="hidden" onChange={handleEditorImageUpload} />
           <Card className={editingArticleId ? "border-blue-500 shadow-md" : ""}>
-            <CardHeader className="flex flex-row justify-between items-center"><CardTitle className="flex items-center gap-2">{editingArticleId ? <><Edit className="w-5 h-5 text-blue-500"/> 修改文章</> : "✍️ 发布文章"} {!editingArticleId && <Button variant="outline" size="sm" onClick={fillKarenDemo} className="ml-4 text-xs border-pink-200 text-pink-600 hover:bg-pink-50">🌸 填入枫花恋文案</Button>}</CardTitle>{editingArticleId && <Button variant="ghost" size="sm" onClick={resetArticleForm} className="text-gray-500 gap-1"><X className="w-4 h-4"/> 取消编辑</Button>}</CardHeader>
+            <CardHeader className="flex flex-row justify-between items-center">
+              <CardTitle className="flex items-center gap-2">
+                {editingArticleId ? <><Edit className="w-5 h-5 text-blue-500"/> 修改文章</> : "✍️ 发布文章"}
+                {!editingArticleId && (
+                  <div className="flex gap-2 ml-4">
+                    <Button variant="outline" size="sm" onClick={fillKarenDemo} className="text-xs border-pink-200 text-pink-600 hover:bg-pink-50">🌸 枫花恋</Button>
+                    <Button variant="outline" size="sm" onClick={fillSodDemo} className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50">🏢 SOD共演</Button>
+                    <Button variant="outline" size="sm" onClick={fillAiseDemo} className="text-xs border-purple-200 text-purple-600 hover:bg-purple-50">♨️ 爱才莉亚</Button>
+                  </div>
+                )}
+              </CardTitle>
+              {editingArticleId && <Button variant="ghost" size="sm" onClick={resetArticleForm} className="text-gray-500 gap-1"><X className="w-4 h-4"/> 取消编辑</Button>}
+            </CardHeader>
             <CardContent className="space-y-4">
               <Input value={articleTitle} onChange={(e) => setArticleTitle(e.target.value)} placeholder="标题" />
-              <Input value={designation} onChange={(e) => setDesignation(e.target.value)} placeholder="神秘代码" className="border-pink-200 focus:border-pink-500" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input value={designation} onChange={(e) => setDesignation(e.target.value)} placeholder="神秘代码 (可选)" className="border-pink-200 focus:border-pink-500" />
+                <div className="flex gap-4">
+                  <select
+                      className="flex h-10 w-full rounded-md border border-input px-3 bg-white text-sm"
+                      value={articleCategory}
+                      onChange={(e) => setArticleCategory(e.target.value)}
+                  >
+                      <option value="all">📁 全部分类</option>
+                      <option value="newcomer">👶 新人</option>
+                      <option value="new_work">🎬 新作</option>
+                      <option value="news">📰 新闻</option>
+                  </select>
+                  <div className="flex items-center gap-2 shrink-0 border px-3 rounded-md bg-white">
+                      <input
+                          type="checkbox"
+                          id="pinned"
+                          checked={articlePinned}
+                          onChange={(e) => setArticlePinned(e.target.checked)}
+                          className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                      />
+                      <label htmlFor="pinned" className="text-sm font-medium text-gray-700 select-none cursor-pointer">🔝 置顶</label>
+                  </div>
+                </div>
+              </div>
               <Input type="file" onChange={(e) => setArticleFile(e.target.files?.[0] || null)} />
               <div className="space-y-2">
                   <div className="flex justify-between items-center">
@@ -538,6 +678,69 @@ export default function AdminPage() {
           </Card>
           <Card><CardHeader><CardTitle>当前轮播</CardTitle></CardHeader><CardContent><Table><TableHeader><TableRow><TableHead>封面</TableHead><TableHead>标题</TableHead><TableHead>类型</TableHead><TableHead className="text-right">操作</TableHead></TableRow></TableHeader><TableBody>{banners.map(b => (<TableRow key={b.id}><TableCell><img src={b.image_url} className="w-20 h-6 object-cover rounded" /></TableCell><TableCell className="font-medium">{b.title}</TableCell><TableCell><Badge variant="outline">{b.type}</Badge></TableCell><TableCell className="text-right space-x-1"><Button variant="ghost" size="sm" onClick={() => handleEditBanner(b)}><Edit className="w-4 h-4 text-purple-500"/></Button><Button variant="ghost" size="sm" onClick={() => handleDeleteBanner(b.id)}><Trash2 className="w-4 h-4 text-red-500"/></Button></TableCell></TableRow>))}</TableBody></Table></CardContent></Card>
         </div>
+      )}
+
+      {/* TAB 4: 评论审核 */}
+      {activeTab === 'comments' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-yellow-500"/> 待审核留言
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {pendingComments.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                <CheckCircle className="w-12 h-12 mx-auto mb-2 text-green-100" />
+                <p>暂无待审核留言，一片清净 ~</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>用户</TableHead>
+                    <TableHead>内容</TableHead>
+                    <TableHead>时间</TableHead>
+                    <TableHead className="text-right">操作</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pendingComments.map((comment) => (
+                    <TableRow key={comment.id}>
+                      <TableCell className="font-bold whitespace-nowrap">{comment.nickname}</TableCell>
+                      <TableCell className="max-w-[300px]">
+                          <div className="text-sm text-gray-800 break-words">{comment.content}</div>
+                          <div className="text-xs text-gray-400 mt-1 flex gap-2">
+                            <span>文章ID: {comment.article_id}</span>
+                            {comment.parent_id && <span className="bg-blue-100 text-blue-600 px-1 rounded">回复ID: {comment.parent_id}</span>}
+                          </div>
+                        </TableCell>
+                      <TableCell className="whitespace-nowrap text-xs text-gray-500">
+                        {new Date(comment.created_at).toLocaleString()}
+                      </TableCell>
+                      <TableCell className="text-right space-x-2">
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                          onClick={() => handleApproveComment(comment.id)}
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1" /> 通过
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteComment(comment.id)}
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" /> 删除
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   );
