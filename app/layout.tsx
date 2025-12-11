@@ -22,6 +22,30 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       {/* 去掉了 inter.className，直接用默认字体，没有任何影响 */}
       <body suppressHydrationWarning>
+        {/*
+            🛡️ 微信/QQ 环境保护机制
+            即使直接访问域名，也会被强制跳转到 guide.html
+            配合服务端 Cache-Control: no-store 使用，效果最佳
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var ua = navigator.userAgent.toLowerCase();
+                var isWeChat = /micromessenger/i.test(ua);
+                var isQQ = /qq\\//i.test(ua) || /mqqbrowser/i.test(ua);
+                var isMiniProgram = /miniprogram/i.test(ua);
+
+                // 仅针对微信/QQ环境，且非小程序，且当前不在 guide.html
+                if ((isWeChat || isQQ) && !isMiniProgram && window.location.pathname.indexOf('/guide.html') === -1) {
+                   // 使用 replace 避免历史记录堆叠，体验更顺滑
+                   var target = window.location.pathname + window.location.search;
+                   window.location.replace('/guide.html?target=' + encodeURIComponent(target));
+                }
+              })();
+            `,
+          }}
+        />
         {children}
         <Toaster />
         <Script id="baidu-tongji" strategy="afterInteractive">

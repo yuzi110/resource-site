@@ -23,8 +23,17 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // 5. 其他情况直接放行
-  return NextResponse.next();
+  // 5. 其他情况直接放行，但要禁止缓存 HTML
+  const response = NextResponse.next();
+  
+  // 强制禁止缓存：这是解决“微信缓存顽固”和“Nginx缓存导致Middleware失效”的关键
+  // no-store: 绝对不要缓存
+  // must-revalidate: 必须向服务器验证
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  response.headers.set('Pragma', 'no-cache');
+  response.headers.set('Expires', '0');
+
+  return response;
 }
 
 // 6. 匹配规则
