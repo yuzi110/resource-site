@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { WxOpenGuide } from "@/components/WxOpenGuide";
 
 // --- 类型定义 ---
 interface Resource {
@@ -89,9 +88,6 @@ export default function Home() {
   const [openBannerDialog, setOpenBannerDialog] = useState<Banner | null>(null);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
 
-  // 微信检测与引导
-  const [isWeChat, setIsWeChat] = useState(false);
-  const [showWxGuide, setShowWxGuide] = useState(false);
   // 添加到桌面引导
   const [showAddToHome, setShowAddToHome] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -100,10 +96,6 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
     const ua = navigator.userAgent.toLowerCase();
-    // 检测是否在微信内
-    if (ua.match(/MicroMessenger/i)) {
-      setIsWeChat(true);
-    }
     // 检测是否是移动端
     if (/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua)) {
       setIsMobile(true);
@@ -112,19 +104,8 @@ export default function Home() {
 
   // 通用外链处理函数
   const handleOpenLink = async (url: string) => {
-    if (isWeChat) {
-      // 如果在微信内：复制链接并弹窗
-      const success = await copyToClipboard(url);
-      if (success) {
-        toast.success("链接已复制，请在浏览器打开");
-      } else {
-        toast.success("请点击右上角，选择在浏览器打开"); // 即使复制失败也提示引导
-      }
-      setShowWxGuide(true);
-    } else {
-      // 正常环境：直接打开
-      window.open(url, '_blank');
-    }
+    // 正常环境：直接打开
+    window.open(url, '_blank');
   };
 
   // 获取数据
@@ -421,9 +402,6 @@ export default function Home() {
         )}
       </div>
 
-      <WxOpenGuide open={showWxGuide} onClose={() => setShowWxGuide(false)} />
-
-      {/* 添加到桌面教程弹窗 */}
       <Dialog open={showAddToHome} onOpenChange={setShowAddToHome}>
         <DialogContent className="max-w-xs rounded-2xl">
           <DialogTitle className="text-center text-lg font-bold">添加到手机桌面</DialogTitle>

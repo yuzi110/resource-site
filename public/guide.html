@@ -172,9 +172,19 @@
             // 获取目标链接 (支持 ?target=/blog/1 这样的参数)
             var urlParams = new URLSearchParams(window.location.search);
             var targetPath = urlParams.get('target') || '/';
-            // 确保 targetPath 是相对路径或同域路径，防止开放重定向漏洞（简单过滤）
+            // 简单防开放重定向：只允许相对路径或同源绝对路径
+            // 如果是以 http 开头，必须确保是本站域名（这里简化处理，直接强转为相对路径或 /）
             if (targetPath.indexOf('http') === 0) {
-                targetPath = '/';
+                try {
+                    var targetUrl = new URL(targetPath);
+                    if (targetUrl.origin === window.location.origin) {
+                         targetPath = targetUrl.pathname + targetUrl.search;
+                    } else {
+                        targetPath = '/';
+                    }
+                } catch(e) {
+                    targetPath = '/';
+                }
             }
             
             var jumpLink = document.getElementById('jump-link');
