@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+// Next.js 16+ convention: middleware is renamed to proxy
+export function proxy(request: NextRequest) {
   const userAgent = request.headers.get('user-agent')?.toLowerCase() || '';
-
+  
   // 1. 识别微信和QQ环境
   const isWeChat = /micromessenger/i.test(userAgent);
   const isQQ = /qq\//i.test(userAgent) || /mqqbrowser/i.test(userAgent);
@@ -17,7 +18,7 @@ export function middleware(request: NextRequest) {
     const target = url.pathname + url.search;
     url.pathname = '/guide.html';
     url.searchParams.set('target', target);
-
+    
     // 4. 重定向
     return NextResponse.redirect(url);
   }
