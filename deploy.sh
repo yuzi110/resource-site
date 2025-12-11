@@ -24,15 +24,5 @@ rm -rf .next
 echo "🔨 正在构建 (这可能需要几分钟)..."
 npm run build
 
-# 6. 重启服务
-echo "🔄 重启 PM2 服务..."
-# 尝试重载，如果失败（进程不存在）则重新启动
-if pm2 reload resource-site 2>/dev/null; then
-    echo "✅ 服务已重载"
-else
-    echo "⚠️ 服务未运行，正在启动..."
-    pm2 start npm --name "resource-site" -- start
-    pm2 save
-fi
-
-echo "🎉 部署完成！"
+echo "🎉 代码更新与构建完成！"
+echo "⚠️ 请前往宝塔面板 -> 网站 -> Node项目 -> 点击【重启】以应用更改。"
