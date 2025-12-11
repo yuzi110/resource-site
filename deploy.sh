@@ -18,6 +18,9 @@ echo "npm install..."
 npm install
 
 # 5. 构建项目
+echo "🧹 清理旧构建缓存..."
+rm -rf .next
+
 echo "🔨 正在构建 (这可能需要几分钟)..."
 npm run build
 
