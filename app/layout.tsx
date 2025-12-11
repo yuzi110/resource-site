@@ -22,27 +22,33 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       {/* 去掉了 inter.className，直接用默认字体，没有任何影响 */}
       <body suppressHydrationWarning>
-        {/* 
-            🔥 双重保险：客户端拦截脚本 
-            即使服务端 Middleware 失效（例如被 Nginx 缓存），这段脚本也能在页面渲染前强制跳转
+        {/*
+            🔥 暴力拦截脚本：放在 body 的第一个子元素，确保最早执行
+            直接检测 userAgent，如果是微信/QQ，直接替换当前页面内容，停止后续渲染
         */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                try {
-                  var ua = navigator.userAgent.toLowerCase();
-                  var isWeChat = /micromessenger/i.test(ua);
-                  var isQQ = /qq\\//i.test(ua) || /mqqbrowser/i.test(ua);
-                  var isMiniProgram = /miniprogram/i.test(ua);
+                var ua = navigator.userAgent.toLowerCase();
+                var isWeChat = /micromessenger/i.test(ua);
+                var isQQ = /qq\\//i.test(ua) || /mqqbrowser/i.test(ua);
+                var isMiniProgram = /miniprogram/i.test(ua);
 
-                  // 只要是微信或QQ，且不是小程序，且当前不在 guide.html，立刻跳转
-                  if ((isWeChat || isQQ) && !isMiniProgram && window.location.pathname.indexOf('/guide.html') === -1) {
-                    // 构建带参数的跳转链接
-                    var target = window.location.pathname + window.location.search;
-                    window.location.href = '/guide.html?target=' + encodeURIComponent(target);
-                  }
-                } catch(e) {}
+                // 如果是微信或QQ，且不是小程序，且不在 guide.html
+                if ((isWeChat || isQQ) && !isMiniProgram && window.location.pathname.indexOf('/guide.html') === -1) {
+                  // 立即停止页面解析和渲染
+                  window.stop();
+
+                  // 构建目标链接
+                  var target = window.location.pathname + window.location.search;
+
+                  // 暴力重定向
+                  window.location.replace('/guide.html?target=' + encodeURIComponent(target));
+
+                  // 防止后续脚本执行（双重保险）
+                  throw new Error('Redirecting to guide page...');
+                }
               })();
             `,
           }}
