@@ -82,7 +82,6 @@ export default function BlogListPage() {
           </Button>
         </Link>
         <h1 className="text-lg font-bold text-gray-800">精选专栏</h1>
-        <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded ml-2 animate-pulse">Live</span>
       </div>
 
       <div className="max-w-2xl mx-auto p-4 space-y-4">
