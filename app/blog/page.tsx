@@ -1,5 +1,9 @@
 "use client";
 
+// 🔥 强制动态渲染，禁用 Next.js 构建缓存
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/src/lib/supabaseClient";
 import Link from "next/link";
