@@ -18,20 +18,5 @@ rm -rf .next
 echo "🏗️ 开始构建..."
 npm run build
 
-echo "🛑 构建成功！准备重启服务..."
-
-# 1. 尝试停止两种可能命名的 PM2 进程
-pm2 delete $APP_NAME 2>/dev/null || true
-pm2 delete $ALT_NAME 2>/dev/null || true
-
-# 2. 🔥 必杀技：如果端口 3000 依然被占（僵尸进程），必须强杀
-pid=$(lsof -t -i:3000)
-if [ -n "$pid" ]; then
-  echo "🔪 发现端口 3000 被 PID $pid 占用，强制释放..."
-  kill -9 $pid
-fi
-
-echo "🚀 启动服务..."
-pm2 start npm --name "$APP_NAME" -- start
-
-echo "✅ 部署完成！"
+echo "✅ 构建完成！"
+echo "� 请在宝塔面板的【Node项目】中手动重启项目，或者等待宝塔自动检测更新。"
