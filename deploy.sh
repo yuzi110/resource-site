@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# 宝塔项目名称 (根据截图是 resource_site)
-APP_NAME="resource_site"
+# 宝塔项目名称 (用户确认为 resource-site)
+APP_NAME="resource-site"
 
 echo "📥 拉取最新代码..."
 git pull
