@@ -85,7 +85,12 @@ export default function BlogListClient({ initialArticles }: BlogListClientProps)
             <ArrowLeft className="w-5 h-5 text-gray-700" />
           </Button>
         </Link>
-        <h1 className="text-lg font-bold text-gray-800">精选专栏</h1>
+        <h1 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+          精选专栏
+          <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-md font-bold animate-pulse">
+            最新
+          </span>
+        </h1>
       </div>
 
       <div className="max-w-2xl mx-auto p-4 space-y-4">
@@ -125,7 +130,7 @@ export default function BlogListClient({ initialArticles }: BlogListClientProps)
                       </div>
                     )}
                   </div>
-                  
+
                   {/* 右侧内容 */}
                   <div className="flex-1 p-3 flex flex-col justify-between">
                     <div>
@@ -162,7 +167,7 @@ export default function BlogListClient({ initialArticles }: BlogListClientProps)
               </div>
             </Link>
           ))}
-          
+
           {filteredArticles.length === 0 && (
              <div className="py-20 text-center text-gray-400 text-sm">暂无该分类文章</div>
           )}
