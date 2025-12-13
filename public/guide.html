@@ -12,7 +12,6 @@
             box-sizing: border-box;
         }
 
-        /* 默认隐藏内容，防止闪烁 */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #fff;
@@ -26,96 +25,81 @@
             text-align: center;
             padding: 20px;
             opacity: 0;
-            /* 关键：初始透明，JS加载完再显示 */
             transition: opacity 0.3s ease-in;
         }
 
-        /* 动画区域 */
+        /* 动画区域 - 飞机绕地球旋转 */
         .animation-container {
-            width: 100%;
-            max-width: 320px;
-            height: 120px;
+            width: 200px;
+            height: 200px;
             position: relative;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .border-bottom {
+        /* 地球 */
+        .earth {
+            width: 80px;
+            height: 80px;
+            font-size: 80px;
+            line-height: 80px;
+            z-index: 1;
+            animation: pulse 3s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        /* 轨道 */
+        .orbit {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background-color: #e5e7eb;
+            width: 160px;
+            height: 160px;
+            border: 2px dashed #e5e7eb;
+            border-radius: 50%;
+            animation: rotate 6s linear infinite;
+        }
+
+        /* 飞机 */
+        .plane-wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            transform: translate(-50%, -50%);
+            animation: rotate-plane 4s linear infinite;
         }
 
         .plane {
             position: absolute;
-            bottom: 0;
+            top: -16px;
+            /* 轨道半径调整 */
+            left: 50%;
             font-size: 32px;
-            transform: translate(-50%, 50%) rotate(-45deg);
-            /* 使用简单的 CSS animation 模拟 JS 的进度 */
-            animation: fly 10s linear forwards;
+            transform: translateX(-50%) rotate(90deg);
+            /* 调整飞机朝向 */
         }
 
-        /* 纯 CSS 飞机图标 (用 emoji 代替 SVG 以减少代码量，或者画一个简单的) */
-        .plane-icon {
-            display: inline-block;
-            transform: rotate(-45deg);
-        }
-
-        .mountain-1 {
-            position: absolute;
-            bottom: 0;
-            left: 10px;
-            font-size: 40px;
-            color: #d1d5db;
-            line-height: 1;
-        }
-
-        .mountain-2 {
-            position: absolute;
-            bottom: 0;
-            right: 20px;
-            font-size: 50px;
-            color: #d1d5db;
-            line-height: 1;
-        }
-
-        @keyframes fly {
-            0% {
-                left: 0%;
+        @keyframes rotate-plane {
+            from {
+                transform: translate(-50%, -50%) rotate(0deg);
             }
 
-            100% {
-                left: 100%;
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
             }
-        }
-
-        /* 进度条 */
-        .progress-bar {
-            width: 100%;
-            max-width: 320px;
-            height: 8px;
-            background-color: #f3f4f6;
-            border-radius: 999px;
-            overflow: hidden;
-            margin-bottom: 15px;
-            display: block;
-            /* 恢复显示 */
-        }
-
-        .percentage {
-            font-family: monospace;
-            font-weight: bold;
-            font-size: 24px;
-            margin-bottom: 30px;
-            display: block;
-            /* 恢复显示 */
-        }
-
-        .loading-text {
-            display: none;
-            /* 隐藏 LOADING 文字 */
         }
 
         /* 文案 */
@@ -140,18 +124,50 @@
         h2 {
             font-size: 18px;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* 加载中三个点动画 */
+        .dots::after {
+            content: '.';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+
+            0%,
+            20% {
+                content: '.';
+            }
+
+            40% {
+                content: '..';
+            }
+
+            60% {
+                content: '...';
+            }
+
+            80%,
+            100% {
+                content: '';
+            }
         }
 
         .info-box {
             background-color: #f9fafb;
-            padding: 16px;
-            border-radius: 12px;
+            padding: 20px;
+            border-radius: 16px;
             border: 1px solid #f3f4f6;
             text-align: left;
             font-size: 14px;
             color: #6b7280;
             line-height: 1.6;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
         .info-box p {
@@ -269,22 +285,18 @@
     <!-- 主内容区 -->
     <div id="main-content" style="display: none;">
         <div class="animation-container">
-            <div class="border-bottom"></div>
-            <div class="mountain-1">⛰️</div>
-            <div class="mountain-2">🏔️</div>
-            <div class="plane">✈️</div>
+            <div class="earth">🌏</div>
+            <div class="orbit"></div>
+            <div class="plane-wrapper">
+                <div class="plane">✈️</div>
+            </div>
         </div>
-
-        <div class="progress-bar">
-            <div class="progress-fill"></div>
-        </div>
-        <div class="percentage" id="percentage">0%</div>
 
         <div class="text-container">
-            <h2>正在搬运资源...</h2>
+            <h2>正在搬运资源<span class="dots"></span></h2>
 
             <div class="info-box">
-                <p>🌏 网站正从遥远的<span class="highlight">阿米利卡</span>搬运过来，要跨过大海、翻过珠峰，第一次加载会有点慢。</p>
+                <p>🚀 网站正从遥远的<span class="highlight">阿米利卡</span>搬运过来，要跨过大海、翻过珠峰，第一次加载会有点慢。</p>
                 <p>🍲 但<span class="highlight">好菜不怕晚</span>，请稍安勿躁。</p>
                 <hr>
                 <div class="list-item">
@@ -362,20 +374,12 @@
                 document.body.style.overflow = 'hidden'; // 防止滚动
 
                 // 进度条数字跳动逻辑
-                var percentageEl = document.getElementById('percentage');
-                var progress = 0;
+                // var percentageEl = document.getElementById('percentage');
+                // var progress = 0;
                 // 模拟加载逻辑：
                 // 1. 前 3 秒快速跑到 80% (假动画)
                 // 2. 然后停在 99% 等待真正的页面跳转 (真加载)
-
-                var timer = setInterval(function () {
-                    if (progress < 80) {
-                        progress += 1; // 快速增加
-                    } else if (progress < 99) {
-                        progress += 0.2; // 缓慢逼近
-                    }
-                    percentageEl.innerText = Math.floor(progress) + '%';
-                }, 30); // 30ms 更新一次
+                // 3. 页面跳转发生时，guide.html 会被销毁，用户感知就是 100% 后切换了
 
                 // 延迟 2.5 秒后再发起真正的跳转，让用户至少看 2.5 秒的飞机动画
                 // 这样避免“一闪而过”或者“白屏”
