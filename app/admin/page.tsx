@@ -390,6 +390,119 @@ export default function AdminPage() {
     toast.success("爱才莉亚文案已填充，请上传封面图后保存！");
   };
 
+  // 青坂葵 演示文案填充
+  const fillAoiDemo = () => {
+    setArticleTitle("【新人鉴赏】(CAWD-918) Kawaii* 捡到宝？号称“一亿分之一”的美少女青坂葵，到底什么来头？");
+    setArticleContent(`
+<p>在业界，有些新人虽然没在 S1、Moodyz 这种顶级片商出道，但她们的素质却足以让所有人大吃一惊。</p>
+<p>今天要介绍的这位来自 <strong>Kawaii* (可爱社)</strong> 的超级新人——<strong>青坂葵 (青坂あおい)</strong>，绝对是 2026 年初最不容忽视的一匹黑马。</p>
+
+<h4>💎 真的有“一亿分之一”那么夸张吗？</h4>
+<p>片商给出的文案极其嚣张：“日本国民中最害羞、最质朴也最色情的 20 岁女大学生，一亿人里才出一个”。</p>
+<p>起初我以为又是常见的“封面欺诈”，但看完正片后，我沉默了。<strong>她真的有这个资本。</strong></p>
+<ul>
+<li><strong>颜值</strong>：清秀的脸庞，甜美的笑容，标准的“初恋脸”。</li>
+<li><strong>身材</strong>：E 罩杯的完美上围，丰满圆润，搭配纤细的腰身和<strong>无毛的下半身</strong>（白虎党狂喜！），简直就是为了镜头而生的肉体。</li>
+<li><strong>造型</strong>：无论是学生服还是双马尾，都精准地击中了“清纯系”爱好者的好球区。</li>
+</ul>
+
+<h4>🎭 反差萌：清纯外表下的“痴女”灵魂</h4>
+<p>如果只是长得好看，那顶多是个花瓶。但青坂葵最可怕的地方在于她的<strong>“战斗力”</strong>。</p>
+<p>根据设定，这位还在读大学的 20 岁妹子，虽然外表是参加“花道社团”的乖乖女，但私底下却是个<strong>重度 AV 爱好者</strong>，性欲极强。她来拍片的原因很简单：<strong>想和最强的枪切磋，追求平凡人生中没有的刺激。</strong></p>
+<p><strong>实战表现令人咋舌：</strong></p>
+<ol>
+<li><strong>对阵武田大树</strong>：初登场的青涩感拿捏得恰到好处，但在骑乘位时流露出的享受表情，瞬间暴露了天赋。</li>
+<li><strong>激战吉村卓</strong>：面对“猥琐流”宗师吉村卓，她不仅没有退缩，反而主动反击。那种面对大叔依然能兴奋地舔舐的画面，绝对不是演出来的。</li>
+<li><strong>口技惊人</strong>：到了口交环节，她完全变成了一个贪婪的痴女，主动攻击的爆发力简直不像个新人。</li>
+</ol>
+
+<h4>💡 严选点评：Kawaii* 的流水线遗憾</h4>
+<p>看完这部作品，我心中只有一个疑问：<strong>为什么这种级别的新人，会在 Kawaii* 这种流水线片商出道？</strong></p>
+<p>她的素质完全可以去 S1 争夺年度新人的宝座。可惜的是，目前她还没有开通社交账号，加上 Kawaii* 的“用完即弃”风格，如果不抓紧机会，这位“一亿分之一”的美少女可能真的会像流星一样划过。</p>
+<p><strong>建议：</strong> 不要犹豫，直接加入 1 月必看清单。且看且珍惜！</p>
+
+<p><strong>✅ 推荐指数：⭐⭐⭐⭐⭐</strong><br>
+<strong>🔥 关键词：</strong> #青坂葵 #青坂あおい #Kawaii* #超级新人 #白虎 #反差萌</p>
+<p><strong>📌 番号：</strong> CAWD-918<br>
+<strong>📅 发行日：</strong> 2026/01/06</p>
+    `);
+    toast.success("青坂葵文案已填充，请上传封面图后保存！");
+  };
+
+  // 雪代一凤 演示文案填充
+  const fillYukishiroDemo = () => {
+    setArticleTitle("【严选情报】(FC2-4810346) 事务所爆雷引发的“下马”惨案？H杯美大生雪代一凤 (雪代美凤) 震撼流出！");
+    setArticleContent(`
+<p>最近有一部 FC2 的片子在老司机圈子里炸开了锅。番号是 <strong>FC2-PPV-4810346</strong>。</p>
+<p>标题写得很诱人：“超大型上市企业 OL，拥有成熟魅力的极品尤物，被社会底层的拍摄者中出”。这种“高岭之花堕落”的题材向来是流量密码，更何况——<strong>这是一支无码片（下马作品）。</strong></p>
+
+<h4>🔍 她是谁？一位消失的“大型新人”</h4>
+<p>阅片无数的朋友可能一眼就认出来了，这不就是去年暑假在 OPPAI 出道的 <strong>雪代一凤 (雪代一鳳)</strong> 吗？</p>
+<p>简单回顾一下她的履历：</p>
+<ul>
+<li><strong>出道即巅峰</strong>：主打“白天是美术系大学生，晚上是泰国浴泡姬”的双面人设。H 罩杯的豪乳加上在风俗店练就的实战技巧，让她一出道就备受关注。</li>
+<li><strong>改名风波</strong>：后来移籍到了事务所 Bambi Promotion，改名为 <strong>雪代美凤 (雪代美鳳)</strong>。</li>
+<li><strong>稳步上升</strong>：虽然不算顶流，但发片稳定，今年 10 月还在搞店铺活动，看起来前途一片大好。</li>
+</ul>
+
+<h4>📉 为什么突然“下马”了？</h4>
+<p>一般来说，现役女优很少会去拍 FC2（除非是私下流出）。而雪代美凤这次的“下马”，背后其实是一场<strong>事务所的崩塌</strong>。</p>
+<p>有心的粉丝可能已经发现，她的 X (Twitter) 账号已经注销，事务所官网也没了她的资料。<strong>她“人间蒸发”了。</strong></p>
+<p><strong>真相是：</strong> 她所在的事务所 Bambi Promotion 前阵子爆了大雷。同社女优蓝芽水月爆料酬劳被私吞，导致旗下女优集体“逃难”。雪代美凤显然也是受害者之一，她没有选择转投其他事务所继续当 AV 女优，而是直接选择了<strong>“下马”</strong>。</p>
+
+<h4>💡 严选点评</h4>
+<p>对于她个人来说，这可能是一种无奈的止损，或者对业界的报复；但对于我们 LSP 来说，<strong>这绝对是一份厚礼。</strong></p>
+<p>在有码时期，我们就只能隔着马赛克想象那对 H 罩杯的真实模样。而现在，一切都毫无保留地展现在眼前。虽然画质和打光不如片商作品那么精致，但那种<strong>“褪去包装后的真实肉感”</strong>，反而更加实用。</p>
+<p><strong>这就是业界残酷的真相：一个事务所的倒塌，换来了无数硬盘的狂欢。</strong></p>
+
+<p><strong>✅ 推荐指数：⭐⭐⭐⭐⭐</strong><br>
+<strong>🔥 关键词：</strong> #雪代一凤 #雪代美凤 #FC2 #无码流出 #H罩杯 #事务所爆雷</p>
+<p><strong>📌 番号：</strong> FC2-PPV-4810346</p>
+    `);
+    toast.success("雪代一凤文案已填充，请上传封面图后保存！");
+  };
+
+  // 林芽依 演示文案填充
+  const fillMeiDemo = () => {
+    setArticleTitle("【严选鉴赏】(IPZZ-780) IP社捡到宝了？“童话级”混血美少女林芽依 (Hayashi Mei) 究竟是何方神圣？");
+    setArticleContent(`
+<p>2026 年刚开年，<strong>Ideapocket (IP社)</strong> 就甩出了一张王炸。</p>
+<p>虽然没赶上去年底“江南四大才子”的混战，但这位压轴登场的新人——<strong>林芽依 (Hayashi Mei)</strong>，其素质之高，完全不输给任何一位顶流新人。片商给她的定位非常夸张：<strong>“宛如从童话里走出来的神秘美少女”。</strong></p>
+
+<h4>🧚‍♀️ 这里的“林”是 Hayashi！</h4>
+<p>首先澄清一个误区，看到“林”这个姓氏，很多人第一反应以为是华人外援。但其实她的名字发音是 <strong>Hayashi Mei</strong>，是土生土长的日本人（不过官方宣传片透露她是混血儿，虽然没说是混哪里的）。</p>
+<p>看看这张封面，IP社特意用了这种“绿野仙踪”般的森系风格，就是为了突显她身上那种<strong>“透明感”</strong>和<strong>“妖精气质”</strong>。</p>
+
+<h4>💎 神之数据：Spec 值 121 的含金量</h4>
+<p>对于身材控来说，林芽依的数据简直是“极品”：</p>
+<ul>
+<li><strong>身高</strong>：161 cm</li>
+<li><strong>体重</strong>：40 kg</li>
+</ul>
+<p>业界有个概念叫“Spec值”（身高-体重），通常超过 110 就算身材很好，而林芽依的数值高达 <strong>121</strong>！<br>
+这意味着什么？意味着她拥有<strong>极致纤细的腰身</strong>和<strong>轻盈的体态</strong>，虽然不是巨乳（E罩杯），但这种<strong>“微乳+细腰”</strong>的搭配，才是最顶级的“美少女奢华配置”。</p>
+
+<h4>🔥 反差萌：清纯脸蛋下的“老司机”</h4>
+<p>别看她长得像个不食人间烟火的精灵，实际上她可是个“懂行”的练家子。</p>
+<p>她在受访时自曝：出道前就经常在推特上关注业界动态，而且<strong>每周自慰至少 3 次</strong>。这种<strong>“知性美少女”</strong>的反差设定，真的太戳人了。</p>
+<p><strong>实战表现：</strong></p>
+<ul>
+<li><strong>女友感爆棚</strong>：她的笑容非常甜美（有点像 Moodyz 的井上桃），在片中展现出的那种羞涩又期待的眼神，简直就是“初恋女友”的代名词。</li>
+<li><strong>意外的努力</strong>：虽然是新人，但她完全没有“木头人”的尴尬。口交时的眼神交流、被插入时为了配合镜头而调整的角度，以及骑乘位时卖力的扭动，都让人看到了她的<strong>“敬业”</strong>和<strong>“天赋”</strong>。</li>
+</ul>
+
+<h4>💡 严选点评</h4>
+<p>如果你厌倦了那些整容脸或者只会叫床的流水线女优，林芽依绝对能给你带来久违的<strong>“心动感”</strong>。</p>
+<p>她就像是你在大学图书馆偶遇的那个混血学妹，看似高冷神秘，实则内心火热。IP社这次确实捡到宝了，这位“童话美少女”绝对有资格竞争 2026 年的最强新人。</p>
+
+<p><strong>✅ 推荐指数：⭐⭐⭐⭐⭐</strong><br>
+<strong>🔥 关键词：</strong> #林芽依 #HayashiMei #IP社 #混血美少女 #透明感 #纤细身材</p>
+<p><strong>📌 番号：</strong> IPZZ-780<br>
+<strong>📅 发行日：</strong> 2026/01/13</p>
+    `);
+    toast.success("林芽依文案已填充，请上传封面图后保存！");
+  };
+
   const handleArticleSubmit = async (status: 'published' | 'draft' = 'published') => {
     if (!articleTitle || !articleContent) return toast.warning("内容不完整");
     if (!editingArticleId && !articleFile) return toast.warning("请上传封面");
@@ -587,6 +700,9 @@ export default function AdminPage() {
                     <Button variant="outline" size="sm" onClick={fillKarenDemo} className="text-xs border-pink-200 text-pink-600 hover:bg-pink-50">🌸 枫花恋</Button>
                     <Button variant="outline" size="sm" onClick={fillSodDemo} className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50">🏢 SOD共演</Button>
                     <Button variant="outline" size="sm" onClick={fillAiseDemo} className="text-xs border-purple-200 text-purple-600 hover:bg-purple-50">♨️ 爱才莉亚</Button>
+                    <Button variant="outline" size="sm" onClick={fillAoiDemo} className="text-xs border-green-200 text-green-600 hover:bg-green-50">💎 青坂葵</Button>
+                    <Button variant="outline" size="sm" onClick={fillYukishiroDemo} className="text-xs border-orange-200 text-orange-600 hover:bg-orange-50">🔥 雪代一凤</Button>
+                    <Button variant="outline" size="sm" onClick={fillMeiDemo} className="text-xs border-teal-200 text-teal-600 hover:bg-teal-50">🧚‍♀️ 林芽依</Button>
                   </div>
                 )}
               </CardTitle>

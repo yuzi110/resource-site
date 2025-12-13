@@ -1,700 +1,85 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import { supabase } from "@/src/lib/supabaseClient";
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, Send, User, Share2, Link as LinkIcon, QrCode, Heart, MessageSquare, ThumbsUp, MessageCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { QRCodeCanvas } from "qrcode.react";
+import BlogDetailClient, { Article, Comment } from "@/components/blog/BlogDetailClient";
+import { notFound } from "next/navigation";
 
-import Image from "next/image";
+// 🔥 启用 ISR: 60秒缓存
+export const revalidate = 60;
 
-interface Article {
-  id: number;
-  title: string;
-  cover_url: string;
-  content: string;
-  created_at: string;
-  view_count: number;
-  like_count: number;
-  designation?: string; // 🔥 番号字段
+// 预渲染最新的 20 篇文章，秒开
+export async function generateStaticParams() {
+  try {
+    const { data } = await supabase
+      .from("articles")
+      .select("id")
+      .eq("status", "published")
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    return (data || []).map((article) => ({
+      id: article.id.toString(),
+    }));
+  } catch (e) {
+    return [];
+  }
 }
 
-interface Comment {
-  id: number;
-  nickname: string;
-  content: string;
-  created_at: string;
-  like_count: number;
-  parent_id: number | null;
-  children?: Comment[];
-}
+export default async function BlogPostPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
 
-// 🔥 神秘按钮组件
-function MysteryButton({ code }: { code: string }) {
-  const [status, setStatus] = useState<'idle' | 'captcha' | 'revealed' | 'cooldown'>('idle');
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [captcha, setCaptcha] = useState({ a: 0, b: 0 });
-  const [answer, setAnswer] = useState("");
-  const [realCode, setRealCode] = useState(""); // 🔥 存储解密后的真番号
+  // 1. 获取文章详情
+  const { data: articleData } = await supabase
+    .from("articles")
+    .select("*")
+    .eq("id", id)
+    .eq("status", "published")
+    .single();
 
-  // 倒计时逻辑
-  useEffect(() => {
-    if (timeLeft <= 0) {
-      if (status === 'revealed') setStatus('cooldown');
-      if (status === 'cooldown') setStatus('idle');
-      return;
-    }
-    const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft, status]);
-
-  const handleStart = () => {
-    setCaptcha({ a: Math.floor(Math.random() * 10) + 1, b: Math.floor(Math.random() * 10) + 1 });
-    setStatus('captcha');
-    setAnswer("");
-  };
-
-  const handleVerify = () => {
-    if (parseInt(answer) === captcha.a + captcha.b) {
-      // 🔥 验证通过时才解密 Base64
-      try {
-        const decoded = decodeURIComponent(atob(code));
-        setRealCode(decoded);
-        setStatus('revealed');
-        setTimeLeft(10); // 展示10秒
-        setTimeout(() => {
-          setStatus('cooldown');
-          setTimeLeft(60); // 冷却60秒
-        }, 10000);
-      } catch (e) {
-        toast.error("解码失败");
-      }
-    } else {
-      toast.error("算错啦，再试一次吧~");
-      handleStart();
-    }
-  };
-
-  if (status === 'idle') {
-    return (
-      <Button onClick={handleStart} variant="outline" className="w-full border-pink-200 text-pink-500 hover:bg-pink-50 hover:text-pink-600">
-        🔒 点击查看神秘代码
-      </Button>
-    );
+  if (!articleData) {
+    notFound();
   }
 
-  if (status === 'captcha') {
-    return (
-      <div className="flex gap-2 items-center animate-in fade-in zoom-in duration-300">
-        <div className="bg-pink-50 px-3 py-2 rounded-md text-pink-600 font-mono font-bold text-sm select-none">
-          {captcha.a} + {captcha.b} = ?
-        </div>
-        <Input
-          className="w-20 text-center"
-          placeholder="答案"
-          autoFocus
-          value={answer}
-          onChange={(e) => setAnswer(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleVerify()}
-        />
-        <Button size="sm" onClick={handleVerify} className="bg-pink-500 hover:bg-pink-600 text-white">
-          确认
-        </Button>
-      </div>
-    );
-  }
+  // 2. 获取评论
+  const { data: commentsData } = await supabase
+    .from("comments")
+    .select("*")
+    .eq("article_id", id)
+    .eq("is_approved", true)
+    .order("created_at", { ascending: true });
 
-  if (status === 'revealed') {
-    return (
-      <div className="w-full bg-pink-100 border border-pink-200 rounded-lg p-4 text-center animate-in slide-in-from-top-2">
-        <p className="text-xs text-pink-400 mb-1">阅后即焚 ({timeLeft}s)</p>
-        <p className="text-2xl font-mono font-bold text-pink-600 select-all tracking-wider">{realCode}</p>
-      </div>
-    );
-  }
+  // 3. 服务端构建评论树，减少客户端计算量
+  const rootComments: Comment[] = [];
+  if (commentsData) {
+    const commentMap = new Map();
 
-  if (status === 'cooldown') {
-    return (
-      <Button disabled variant="secondary" className="w-full bg-gray-100 text-gray-400 cursor-not-allowed">
-        ⏳ 技能冷却中 ({timeLeft}s)
-      </Button>
-    );
-  }
+    // 初始化 Map
+    commentsData.forEach((c: any) => {
+      c.children = [];
+      commentMap.set(c.id, c);
+    });
 
-  return null;
-}
-
-// 🔥 分享组件
-function ShareSection({ title, id }: { title: string, id: string }) {
-  const [showQr, setShowQr] = useState(false);
-  const [safeUrl, setSafeUrl] = useState("");
-
-  useEffect(() => {
-    // 构造防红/引导跳转链接
-    const origin = window.location.origin;
-    // 使用 guide.html 作为中转页，target 参数为目标文章路径
-    const url = `${origin}/guide.html?target=${encodeURIComponent(`/blog/${id}`)}`;
-    setSafeUrl(url);
-  }, [id]);
-
-  const handleCopyLink = async () => {
-    if (!safeUrl) return;
-
-    try {
-      // 优先尝试现代 API (仅在 HTTPS 或 localhost 下可用)
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(safeUrl);
-        toast.success("链接已复制，快去分享给好友吧！");
-      } else {
-        throw new Error("Clipboard API not available");
-      }
-    } catch (err) {
-      // 降级方案：传统的 document.execCommand (兼容 HTTP 和旧浏览器)
-      try {
-        const textArea = document.createElement("textarea");
-        textArea.value = safeUrl;
-
-        // 确保元素不可见但可选中，避免滚动页面
-        textArea.style.position = "fixed";
-        textArea.style.left = "-9999px";
-        textArea.style.top = "0";
-        document.body.appendChild(textArea);
-
-        textArea.focus();
-        textArea.select();
-
-        const successful = document.execCommand('copy');
-        document.body.removeChild(textArea);
-
-        if (successful) {
-          toast.success("链接已复制，快去分享给好友吧！");
+    // 组装树
+    commentsData.forEach((c: any) => {
+      if (c.parent_id) {
+        const parent = commentMap.get(c.parent_id);
+        if (parent) {
+          parent.children.push(c);
         } else {
-          toast.error("复制失败，请手动复制");
+          // 孤儿评论（父评论被删），作为顶级评论展示
+          rootComments.push(c);
         }
-      } catch (fallbackErr) {
-        toast.error("复制失败，请手动复制");
+      } else {
+        rootComments.push(c);
       }
-    }
-  };
+    });
 
-  const handleSystemShare = async () => {
-    if (navigator.share && safeUrl) {
-      try {
-        await navigator.share({
-          title: title,
-          text: `推荐阅读：${title}`,
-          url: safeUrl,
-        });
-      } catch (err) {
-        // console.log("分享取消或失败", err);
-      }
-    } else {
-      handleCopyLink();
-    }
-  };
+    // 倒序排列顶级评论（最新的在最前）
+    rootComments.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }
 
   return (
-    <div className="flex flex-col items-center gap-4 py-6">
-      <div className="flex items-center gap-2 text-gray-400 text-sm">
-        <div className="h-[1px] w-12 bg-gray-200"></div>
-        <span>分享给好友</span>
-        <div className="h-[1px] w-12 bg-gray-200"></div>
-      </div>
-
-      <div className="flex gap-6">
-        {/* 1. 复制链接 */}
-        <div className="flex flex-col items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="rounded-full w-12 h-12 border-gray-200 hover:bg-gray-50 hover:text-blue-600 transition-colors"
-            onClick={handleCopyLink}
-          >
-            <LinkIcon className="w-5 h-5" />
-          </Button>
-          <span className="text-xs text-gray-500">复制链接</span>
-        </div>
-
-        {/* 2. 微信二维码 */}
-        <div className="flex flex-col items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="rounded-full w-12 h-12 border-gray-200 hover:bg-green-50 hover:text-green-600 transition-colors"
-            onClick={() => setShowQr(true)}
-          >
-            <QrCode className="w-5 h-5" />
-          </Button>
-          <span className="text-xs text-gray-500">微信/朋友圈</span>
-        </div>
-
-        {/* 3. 系统分享 (仅移动端显示) */}
-        <div className="flex flex-col items-center gap-2 md:hidden">
-           <Button
-            variant="outline"
-            size="icon"
-            className="rounded-full w-12 h-12 border-gray-200 hover:bg-gray-50 transition-colors"
-            onClick={handleSystemShare}
-          >
-            <Share2 className="w-5 h-5" />
-          </Button>
-          <span className="text-xs text-gray-500">更多</span>
-        </div>
-      </div>
-
-      {/* 二维码弹窗 */}
-      <Dialog open={showQr} onOpenChange={setShowQr}>
-        <DialogContent className="sm:max-w-sm flex flex-col items-center">
-          <DialogHeader>
-            <DialogTitle className="text-center">分享到微信</DialogTitle>
-            <DialogDescription className="text-center">
-              使用微信“扫一扫”，或截屏保存分享
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="p-4 bg-white rounded-xl shadow-sm border mt-2">
-            {safeUrl && (
-              <QRCodeCanvas
-                value={safeUrl}
-                size={200}
-                bgColor={"#ffffff"}
-                fgColor={"#000000"}
-                level={"L"}
-                includeMargin={false}
-              />
-            )}
-          </div>
-          <p className="text-xs text-gray-400 mt-2 text-center max-w-[200px]">
-            扫码后会自动检测环境，引导至浏览器打开，防止链接被拦截
-          </p>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
-
-export default function BlogPostPage() {
-  const { id } = useParams();
-  const [article, setArticle] = useState<Article | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // 评论表单状态
-  const [nickname, setNickname] = useState("");
-  const [commentContent, setCommentContent] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
-  // 回复和点赞状态
-  const [replyingTo, setReplyingTo] = useState<number | null>(null);
-  const [replyContent, setReplyContent] = useState("");
-  const [articleLiked, setArticleLiked] = useState(false);
-  const [likedComments, setLikedComments] = useState<number[]>([]);
-
-  useEffect(() => {
-    if (!id) return;
-
-    // 初始化本地点赞状态
-    const likedArticles = JSON.parse(localStorage.getItem('liked_articles') || '[]');
-    setArticleLiked(likedArticles.includes(id));
-
-    const likedCommentsStorage = JSON.parse(localStorage.getItem('liked_comments') || '[]');
-    setLikedComments(likedCommentsStorage);
-
-    // 1. 获取文章详情
-    const fetchArticle = async () => {
-      const { data } = await supabase
-        .from("articles")
-        .select("*")
-        .eq("id", id)
-        .eq("status", "published")
-        .single();
-
-      if (data) {
-        setArticle(data);
-        // 增加浏览量 (静默操作)
-        await supabase.from("articles").update({ view_count: (data.view_count || 0) + 1 }).eq("id", id);
-      }
-      setLoading(false);
-    };
-
-    // 2. 获取已审核通过的评论
-    const fetchComments = async () => {
-      const { data } = await supabase
-        .from("comments")
-        .select("*")
-        .eq("article_id", id)
-        .eq("is_approved", true)
-        .order("created_at", { ascending: true }); // 按时间正序，方便构建楼层
-
-      if (data) {
-        // 构建评论树
-        const commentMap = new Map();
-        const rootComments: Comment[] = [];
-
-        // 初始化 Map
-        data.forEach((comment: any) => {
-          comment.children = [];
-          commentMap.set(comment.id, comment);
-        });
-
-        // 组装树
-        data.forEach((comment: any) => {
-          if (comment.parent_id) {
-            const parent = commentMap.get(comment.parent_id);
-            if (parent) {
-              parent.children.push(comment);
-            } else {
-              // 如果找不到父评论（可能被删了），就作为顶级评论显示
-              rootComments.push(comment);
-            }
-          } else {
-            rootComments.push(comment);
-          }
-        });
-
-        // 倒序排列顶级评论（最新的在最前）
-        rootComments.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-        setComments(rootComments);
-      }
-    };
-
-    fetchArticle();
-    fetchComments();
-  }, [id]);
-
-  // 文章点赞
-  const handleLikeArticle = async () => {
-    if (!article) return;
-
-    if (articleLiked) {
-      // 取消点赞
-      setArticleLiked(false);
-      setArticle(prev => prev ? { ...prev, like_count: Math.max((prev.like_count || 0) - 1, 0) } : null);
-
-      const likedArticles = JSON.parse(localStorage.getItem('liked_articles') || '[]');
-      const newLikedArticles = likedArticles.filter((id: any) => id !== article.id);
-      localStorage.setItem('liked_articles', JSON.stringify(newLikedArticles));
-
-      // 数据库更新 (Decrement)
-      const { error } = await supabase.rpc('decrement_article_likes', { article_id: article.id });
-
-      if (error) {
-         const { data } = await supabase.from('articles').select('like_count').eq('id', article.id).single();
-         if (data) {
-            await supabase.from('articles').update({ like_count: Math.max(data.like_count - 1, 0) }).eq('id', article.id);
-         }
-      }
-    } else {
-      // 点赞
-      setArticleLiked(true);
-      setArticle(prev => prev ? { ...prev, like_count: (prev.like_count || 0) + 1 } : null);
-
-      const likedArticles = JSON.parse(localStorage.getItem('liked_articles') || '[]');
-      if (!likedArticles.includes(article.id)) {
-          localStorage.setItem('liked_articles', JSON.stringify([...likedArticles, article.id]));
-      }
-
-      // 数据库更新 (Increment)
-      const { error } = await supabase.rpc('increment_article_likes', { article_id: article.id });
-
-      if (error) {
-         const { data } = await supabase.from('articles').select('like_count').eq('id', article.id).single();
-         if (data) {
-            await supabase.from('articles').update({ like_count: data.like_count + 1 }).eq('id', article.id);
-         }
-      }
-      toast.success("点赞成功！");
-    }
-  };
-
-  // 评论点赞
-  const handleLikeComment = async (commentId: number) => {
-    const isLiked = likedComments.includes(commentId);
-
-    if (isLiked) {
-      // 取消点赞
-      setLikedComments(prev => prev.filter(id => id !== commentId));
-
-      const updateCommentLike = (list: Comment[]): Comment[] => {
-        return list.map(c => {
-          if (c.id === commentId) return { ...c, like_count: Math.max((c.like_count || 0) - 1, 0) };
-          if (c.children && c.children.length > 0) return { ...c, children: updateCommentLike(c.children) };
-          return c;
-        });
-      };
-      setComments(prev => updateCommentLike(prev));
-
-      localStorage.setItem('liked_comments', JSON.stringify(likedComments.filter(id => id !== commentId)));
-
-      const { error } = await supabase.rpc('decrement_comment_likes', { comment_id: commentId });
-      if (error) {
-         const { data } = await supabase.from('comments').select('like_count').eq('id', commentId).single();
-         if (data) {
-            await supabase.from('comments').update({ like_count: Math.max(data.like_count - 1, 0) }).eq('id', commentId);
-         }
-      }
-    } else {
-      // 点赞
-      setLikedComments(prev => [...prev, commentId]);
-
-      const updateCommentLike = (list: Comment[]): Comment[] => {
-        return list.map(c => {
-          if (c.id === commentId) return { ...c, like_count: (c.like_count || 0) + 1 };
-          if (c.children && c.children.length > 0) return { ...c, children: updateCommentLike(c.children) };
-          return c;
-        });
-      };
-      setComments(prev => updateCommentLike(prev));
-
-      localStorage.setItem('liked_comments', JSON.stringify([...likedComments, commentId]));
-
-      const { error } = await supabase.rpc('increment_comment_likes', { comment_id: commentId });
-      if (error) {
-         const { data } = await supabase.from('comments').select('like_count').eq('id', commentId).single();
-         if (data) {
-            await supabase.from('comments').update({ like_count: data.like_count + 1 }).eq('id', commentId);
-         }
-      }
-      toast.success("点赞成功！");
-    }
-  };
-
-  // 提交评论 (顶级)
-  const handleSubmitComment = async () => {
-    if (!commentContent.trim()) {
-      toast.warning("写点什么再发吧~");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const { error } = await supabase.from("comments").insert({
-        article_id: id,
-        nickname: nickname || "匿名绅士",
-        content: commentContent,
-        is_approved: false
-      });
-
-      if (error) throw error;
-
-      toast.success("留言已提交，管理员审核后显示 ✅");
-      setCommentContent("");
-    } catch (error) {
-      toast.error("发送失败，请稍后再试");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // 提交回复
-  const handleSubmitReply = async (parentId: number) => {
-    if (!replyContent.trim()) {
-      toast.warning("回复内容不能为空");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const { error } = await supabase.from("comments").insert({
-        article_id: id,
-        nickname: nickname || "匿名绅士",
-        content: replyContent,
-        parent_id: parentId,
-        is_approved: false
-      });
-
-      if (error) throw error;
-
-      toast.success("回复已提交，审核后显示 ✅");
-      setReplyContent("");
-      setReplyingTo(null);
-    } catch (error) {
-      toast.error("回复失败，请稍后再试");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // 渲染评论组件 (递归)
-  const CommentItem = ({ comment, isChild = false }: { comment: Comment, isChild?: boolean }) => {
-    return (
-      <div className={`flex gap-3 ${isChild ? "mt-4 ml-10 border-l-2 pl-4 border-gray-100" : ""}`}>
-        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-          <User className="w-4 h-4 text-blue-500" />
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-1">
-            <span className="font-bold text-sm text-gray-700">{comment.nickname}</span>
-            <span className="text-xs text-gray-400">{new Date(comment.created_at).toLocaleDateString()}</span>
-          </div>
-          <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg rounded-tl-none">
-            {comment.content}
-          </p>
-
-          {/* 评论操作栏 */}
-          <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
-            <button
-              onClick={() => handleLikeComment(comment.id)}
-              className={`flex items-center gap-1 hover:text-red-500 transition-colors ${likedComments.includes(comment.id) ? "text-red-500" : ""}`}
-            >
-              <ThumbsUp className="w-3 h-3" />
-              <span>{comment.like_count || 0}</span>
-            </button>
-            <button
-              onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-              className="flex items-center gap-1 hover:text-blue-500 transition-colors"
-            >
-              <MessageCircle className="w-3 h-3" />
-              <span>回复</span>
-            </button>
-          </div>
-
-          {/* 回复输入框 */}
-          {replyingTo === comment.id && (
-            <div className="mt-3 animate-in fade-in slide-in-from-top-2">
-               <Input
-                placeholder={`回复 @${comment.nickname}...`}
-                className="mb-2 text-sm h-9"
-                value={replyContent}
-                onChange={(e) => setReplyContent(e.target.value)}
-                autoFocus
-              />
-              <div className="flex justify-end gap-2">
-                <Button size="sm" variant="ghost" onClick={() => setReplyingTo(null)} className="h-7 text-xs">取消</Button>
-                <Button size="sm" onClick={() => handleSubmitReply(comment.id)} disabled={submitting} className="h-7 text-xs bg-blue-600 hover:bg-blue-700">
-                  发送回复
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* 递归渲染子评论 */}
-          {comment.children && comment.children.length > 0 && (
-            <div className="mt-2">
-              {comment.children.map(child => (
-                <CommentItem key={child.id} comment={child} isChild={true} />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  if (loading) return <div className="text-center py-20 text-gray-400">加载中...</div>;
-  if (!article) return <div className="text-center py-20">文章不存在</div>;
-
-  return (
-    <div className="min-h-screen bg-white pb-20">
-      {/* 顶部导航 */}
-      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b px-4 py-3 flex items-center gap-3">
-        <Link href="/blog">
-          <Button variant="ghost" size="icon" className="-ml-2">
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-        </Link>
-        <h1 className="font-bold text-gray-800 line-clamp-1 flex-1">{article.title}</h1>
-      </div>
-
-      <div className="max-w-2xl mx-auto">
-        {/* 文章主体 */}
-        <article className="p-5">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4 leading-tight">
-            {article.title}
-          </h1>
-          <div className="text-xs text-gray-400 mb-6 flex items-center gap-4">
-            <span>{new Date(article.created_at).toLocaleDateString()}</span>
-            {/* 顶部浏览量保留，因为用户说“也放到底部”，意味着两处都有 */}
-            <span>阅读 {article.view_count}</span>
-          </div>
-
-          {/* HTML 内容渲染区 */}
-          <div
-            className="prose prose-blue max-w-none prose-img:!rounded-2xl prose-img:w-full text-gray-700 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: article.content }}
-          />
-
-          {/* 🔥 神秘代码区域 - 移至文章底部 */}
-          {article.designation && (
-            <div className="mt-8 mb-6">
-              {/* 🔥 服务端传给客户端前进行 Base64 编码混淆 */}
-          <MysteryButton code={btoa(encodeURIComponent(article.designation))} />
-            </div>
-          )}
-
-          {/* 文章底部数据栏 & 点赞 */}
-          <div className="mt-12 flex items-center justify-between">
-            <div className="text-xs text-gray-400 flex gap-4">
-              <span>阅读 {article.view_count}</span>
-              <span>喜欢 {article.like_count || 0}</span>
-            </div>
-
-            <Button
-              variant={articleLiked ? "default" : "outline"}
-              className={`rounded-full gap-2 transition-all ${articleLiked ? "bg-red-500 hover:bg-red-600 border-red-500" : "border-red-200 text-red-500 hover:bg-red-50"}`}
-              onClick={handleLikeArticle}
-            >
-              <Heart className={`w-4 h-4 ${articleLiked ? "fill-current" : ""}`} />
-              {articleLiked ? "已赞" : "点赞"}
-            </Button>
-          </div>
-        </article>
-
-        <hr className="my-8 border-gray-100" />
-
-          {/* 🔥 分享区域 */}
-          {article && <ShareSection title={article.title} id={article.id.toString()} />}
-
-          <hr className="my-8 border-gray-100" />
-
-          {/* 评论区 */}
-        <div className="px-5">
-          <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-            精选留言 <span className="text-xs font-normal text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{comments.reduce((acc, curr) => acc + 1 + (curr.children?.length || 0), 0)}</span>
-          </h3>
-
-          {/* 评论输入框 */}
-          <div className="bg-gray-50 p-4 rounded-xl mb-8 space-y-3">
-            <Input
-              placeholder="昵称 (选填)"
-              className="bg-white"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-            />
-            <Textarea
-              placeholder="友善发言，评论人工审核，请勿发表违规内容..."
-              className="bg-white min-h-[80px]"
-              value={commentContent}
-              onChange={(e) => setCommentContent(e.target.value)}
-            />
-            <div className="flex justify-end">
-              <Button onClick={handleSubmitComment} disabled={submitting} className="gap-2">
-                <Send className="w-4 h-4" />
-                {submitting ? "发送中..." : "发送留言"}
-              </Button>
-            </div>
-            <p className="text-xs text-gray-400 text-center mt-2">
-              温馨提示：留言需通过审核才会显示，请勿发布广告。
-            </p>
-          </div>
-
-          {/* 评论列表 */}
-          <div className="space-y-6">
-            {comments.length === 0 ? (
-              <div className="text-center py-10 text-gray-300 text-sm">暂无留言，快来抢沙发~</div>
-            ) : (
-              comments.map((comment) => (
-                <CommentItem key={comment.id} comment={comment} />
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+    <BlogDetailClient
+      initialArticle={articleData as unknown as Article}
+      initialComments={rootComments}
+    />
   );
 }
