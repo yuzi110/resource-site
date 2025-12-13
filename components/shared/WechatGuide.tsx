@@ -33,6 +33,17 @@ export default function WechatGuide() {
         </svg>
       </div>
 
+      {/* 关闭按钮 */}
+      <button
+        className="absolute top-4 left-4 text-white/80 hover:text-white"
+        onClick={() => {
+          setShowGuide(false);
+          document.body.style.overflow = "";
+        }}
+      >
+        <X size={32} />
+      </button>
+
       <div className="mt-20 bg-white text-gray-900 p-6 rounded-2xl max-w-xs w-full shadow-2xl relative">
         <div className="absolute -top-3 right-8 w-6 h-6 bg-white rotate-45 transform"></div>
         <h3 className="text-xl font-bold mb-3 flex items-center gap-2">
