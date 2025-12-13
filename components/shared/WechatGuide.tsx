@@ -15,10 +15,9 @@ export default function WechatGuide() {
 
     // 如果是微信/QQ 且不是小程序，则显示遮罩
     if ((isWeChat || isQQ) && !isMiniProgram) {
-      // setShowGuide(true);
+      setShowGuide(true);
       // 禁止背景滚动
-      // document.body.style.overflow = "hidden";
-      window.location.href = "/guide.html";
+      document.body.style.overflow = "hidden";
     }
   }, []);
 
