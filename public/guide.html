@@ -100,8 +100,8 @@
             border-radius: 999px;
             overflow: hidden;
             margin-bottom: 15px;
-            display: none;
-            /* 隐藏进度条 */
+            display: block;
+            /* 恢复显示 */
         }
 
         .percentage {
@@ -109,30 +109,13 @@
             font-weight: bold;
             font-size: 24px;
             margin-bottom: 30px;
-            display: none;
-            /* 隐藏百分比 */
+            display: block;
+            /* 恢复显示 */
         }
 
         .loading-text {
-            font-family: monospace;
-            font-weight: bold;
-            font-size: 20px;
-            margin-bottom: 30px;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                opacity: 0.6;
-            }
-
-            50% {
-                opacity: 1;
-            }
-
-            100% {
-                opacity: 0.6;
-            }
+            display: none;
+            /* 隐藏 LOADING 文字 */
         }
 
         /* 文案 */
@@ -296,7 +279,6 @@
             <div class="progress-fill"></div>
         </div>
         <div class="percentage" id="percentage">0%</div>
-        <div class="loading-text" id="loading-dots">LOADING</div>
 
         <div class="text-container">
             <h2>正在搬运资源...</h2>
@@ -379,15 +361,21 @@
                 document.getElementById('main-content').style.display = 'flex';
                 document.body.style.overflow = 'hidden'; // 防止滚动
 
-                // 进度条数字跳动逻辑 (已弃用，改为 Loading 文字动画)
-                var loadingDots = document.getElementById('loading-dots');
-                var dotsCount = 0;
+                // 进度条数字跳动逻辑
+                var percentageEl = document.getElementById('percentage');
+                var progress = 0;
+                // 模拟加载逻辑：
+                // 1. 前 3 秒快速跑到 80% (假动画)
+                // 2. 然后停在 99% 等待真正的页面跳转 (真加载)
+
                 var timer = setInterval(function () {
-                    dotsCount = (dotsCount + 1) % 4;
-                    var dots = "";
-                    for (var i = 0; i < dotsCount; i++) dots += ".";
-                    loadingDots.innerText = "LOADING" + dots;
-                }, 500);
+                    if (progress < 80) {
+                        progress += 1; // 快速增加
+                    } else if (progress < 99) {
+                        progress += 0.2; // 缓慢逼近
+                    }
+                    percentageEl.innerText = Math.floor(progress) + '%';
+                }, 30); // 30ms 更新一次
 
                 // 延迟 2.5 秒后再发起真正的跳转，让用户至少看 2.5 秒的飞机动画
                 // 这样避免“一闪而过”或者“白屏”
