@@ -1,15 +1,7 @@
 #!/bin/bash
 
-echo "🛑 停止服务..."
-# 尝试停止 PM2 服务
-pm2 delete resource-site 2>/dev/null || true
-
-# 🔥 暴力查杀端口 3000 (防止僵尸进程)
-pid=$(lsof -t -i:3000)
-if [ -n "$pid" ]; then
-  echo "🔪 发现占用端口 3000 的进程 (PID: $pid)，强制杀除..."
-  kill -9 $pid
-fi
+# 宝塔项目名称 (根据截图是 resource_site)
+APP_NAME="resource_site"
 
 echo "📥 拉取最新代码..."
 git pull
@@ -23,8 +15,9 @@ npm install
 echo "🏗️ 开始构建..."
 npm run build
 
-echo "🚀 启动服务..."
-# 使用 pm2 启动，名称为 resource-site
-pm2 start npm --name "resource-site" -- start
+echo "🚀 重载服务..."
+# 优先尝试平滑重载 (Reload)，如果服务不存在则启动 (Start)
+# 这样可以保持与宝塔的兼容性，只要名称一致
+pm2 reload $APP_NAME 2>/dev/null || pm2 start npm --name "$APP_NAME" -- start
 
 echo "✅ 部署完成！"
