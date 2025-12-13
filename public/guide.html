@@ -33,10 +33,11 @@
             width: 200px;
             height: 200px;
             position: relative;
-            margin-bottom: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin: 0 auto 40px auto;
+            /* 水平居中，底部留白 */
         }
 
         /* 地球 */
@@ -105,8 +106,12 @@
         /* 文案 */
         .text-container {
             max-width: 400px;
+            width: 100%;
+            /* 确保在小屏幕下也能居中 */
             opacity: 0;
             animation: fadeIn 1s ease-out 0.5s forwards;
+            margin: 0 auto;
+            /* 水平居中 */
         }
 
         @keyframes fadeIn {
