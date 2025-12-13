@@ -36,10 +36,10 @@ export default function WechatGuide() {
       <div className="mt-20 bg-white text-gray-900 p-6 rounded-2xl max-w-xs w-full shadow-2xl relative">
         <div className="absolute -top-3 right-8 w-6 h-6 bg-white rotate-45 transform"></div>
         <h3 className="text-xl font-bold mb-3 flex items-center gap-2">
-          ⚠️ 无法在微信/QQ访问
+          请在浏览器打开
         </h3>
         <p className="text-gray-600 leading-relaxed text-sm mb-4">
-          由于平台限制，请点击右上角菜单 <span className="font-bold">···</span>
+          点击右上角菜单 <span className="font-bold">···</span>
         </p>
         <div className="flex items-center gap-3 bg-gray-100 p-3 rounded-xl">
            <div className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">1</div>
