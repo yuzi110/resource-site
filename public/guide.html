@@ -19,6 +19,7 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
+            /* 确保垂直排列 */
             align-items: center;
             justify-content: center;
             overflow: hidden;
@@ -26,6 +27,15 @@
             padding: 20px;
             opacity: 0;
             transition: opacity 0.3s ease-in;
+        }
+
+        /* 主容器：强制内部元素垂直堆叠 */
+        #main-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
         }
 
         /* 动画区域 - 飞机绕地球旋转 */
@@ -37,7 +47,9 @@
             align-items: center;
             justify-content: center;
             margin: 0 auto 40px auto;
-            /* 水平居中，底部留白 */
+            /* 底部间距 */
+            flex-shrink: 0;
+            /* 防止被压缩 */
         }
 
         /* 地球 */
@@ -288,7 +300,7 @@
 <body>
 
     <!-- 主内容区 -->
-    <div id="main-content" style="display: none;">
+    <div id="main-content" style="display: none; flex-direction: column;">
         <div class="animation-container">
             <div class="earth">🌏</div>
             <div class="orbit"></div>
@@ -375,7 +387,12 @@
                 document.title = "请在浏览器打开";
             } else {
                 // 正常浏览器，显示 Loading 动画
-                document.getElementById('main-content').style.display = 'flex';
+                // 显式设置 flex 布局，覆盖 display: none，并确保垂直排列
+                var mainContent = document.getElementById('main-content');
+                mainContent.style.display = 'flex';
+                mainContent.style.flexDirection = 'column';
+                mainContent.style.alignItems = 'center';
+
                 document.body.style.overflow = 'hidden'; // 防止滚动
 
                 // 进度条数字跳动逻辑
