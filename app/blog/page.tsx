@@ -14,7 +14,8 @@ export default async function BlogListPage() {
       .eq("status", "published")
       // 数据库层面先按置顶排序，再按时间排序
       .order("is_pinned", { ascending: false })
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(50); // 限制返回数量，防止数据量过大导致查询缓慢
 
     // Supabase 返回的 comments 是数组，类型转换一下
     const articles = (data || []) as unknown as Article[];

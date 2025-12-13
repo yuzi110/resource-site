@@ -88,7 +88,7 @@ export default function BlogListClient({ initialArticles }: BlogListClientProps)
         <h1 className="text-lg font-bold text-gray-800 flex items-center gap-2">
           精选专栏
           <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-md font-bold animate-pulse">
-            最新
+            Live
           </span>
         </h1>
       </div>
