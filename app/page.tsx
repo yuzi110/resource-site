@@ -12,6 +12,7 @@ export default async function Home() {
       supabase
         .from("resources")
         .select("*")
+        .order("is_pinned", { ascending: false })
         .order("id", { ascending: false })
         .range(0, 11),
       supabase

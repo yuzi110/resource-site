@@ -25,6 +25,7 @@ export interface Resource {
   baidu_link?: string;
   xunlei_link?: string;
   yidong_link?: string;
+  is_pinned?: boolean; // 新增置顶字段
 }
 
 export interface Banner {
@@ -75,6 +76,8 @@ export default function HomeClient({ initialResources, initialBanners }: HomeCli
   const [banners, setBanners] = useState<Banner[]>(initialBanners);
   const [loading, setLoading] = useState(false); // 初始不再 loading，因为数据已有
   const [searchQuery, setSearchQuery] = useState("");
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // 分页状态
   const [page, setPage] = useState(0);
@@ -122,39 +125,60 @@ export default function HomeClient({ initialResources, initialBanners }: HomeCli
       }
     };
     checkNewArticles();
+
+    // 获取分类列表
+    const fetchCategories = async () => {
+      try {
+        const { data } = await supabase
+          .from("resources")
+          .select("category")
+          .not("category", "is", null);
+
+        if (data) {
+          const uniqueCategories = Array.from(new Set(data.map(item => item.category).filter(Boolean)));
+          setCategories(uniqueCategories);
+        }
+      } catch (e) {
+        console.error("Failed to fetch categories", e);
+      }
+    };
+    fetchCategories();
   }, []);
 
   const handleOpenLink = async (url: string) => {
     window.open(url, '_blank');
   };
 
-  // 搜索逻辑
-  const performSearch = async (queryText: string) => {
+  // 通用资源获取函数
+  const fetchResources = async (query: string, category: string | null) => {
     setLoading(true);
     setPage(0);
     setHasMore(true);
 
     try {
-      let resQuery = supabase.from("resources").select("*").order("id", { ascending: false });
+      let resQuery = supabase
+        .from("resources")
+        .select("*")
+        .order("is_pinned", { ascending: false })
+        .order("id", { ascending: false });
 
-      if (queryText) {
-        resQuery = resQuery.ilike('title', `%${queryText}%`).limit(50);
-      } else {
-        // 如果清空搜索，恢复初始数据（或者重新拉取第一页）
-        // 这里选择重新拉取，保证数据最新
-        resQuery = resQuery.range(0, 11);
+      if (query) {
+        resQuery = resQuery.ilike('title', `%${query}%`);
       }
 
-      const { data: resData } = await resQuery;
+      if (category) {
+        resQuery = resQuery.eq('category', category);
+      }
+
+      // 每次获取第一页
+      const { data: resData } = await resQuery.range(0, 11);
+
       if (resData) {
         setResources(resData);
-        if (!queryText && resData.length < 12) setHasMore(false);
-        if (queryText) setHasMore(false);
+        if (resData.length < 12) setHasMore(false);
       }
-      
-      // 注意：搜索时不重新拉取 Banner，保持初始的 Banner
     } catch (error) {
-      toast.error("搜索失败");
+      toast.error("加载失败");
     } finally {
       setLoading(false);
     }
@@ -162,12 +186,26 @@ export default function HomeClient({ initialResources, initialBanners }: HomeCli
 
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
-    performSearch(searchQuery);
+    setSelectedCategory(null); // 搜索时清除分类
+    fetchResources(searchQuery, null);
+  };
+
+  const handleCategorySelect = (category: string | null) => {
+    if (category === selectedCategory && category !== null) {
+        // 如果点击已选中的分类，则取消选择（回到全部）
+        setSelectedCategory(null);
+        setSearchQuery("");
+        fetchResources("", null);
+        return;
+    }
+    setSelectedCategory(category);
+    setSearchQuery(""); // 分类时清除搜索
+    fetchResources("", category);
   };
 
   // 加载更多
   const loadMore = async () => {
-    if (isLoadingMore || !hasMore || searchQuery) return;
+    if (isLoadingMore || !hasMore) return;
 
     setIsLoadingMore(true);
     const nextPage = page + 1;
@@ -175,11 +213,20 @@ export default function HomeClient({ initialResources, initialBanners }: HomeCli
     const end = start + 11;
 
     try {
-      const { data } = await supabase
+      let query = supabase
         .from("resources")
         .select("*")
-        .order("id", { ascending: false })
-        .range(start, end);
+        .order("is_pinned", { ascending: false })
+        .order("id", { ascending: false });
+
+      if (searchQuery) {
+        query = query.ilike('title', `%${searchQuery}%`);
+      }
+      if (selectedCategory) {
+        query = query.eq('category', selectedCategory);
+      }
+
+      const { data } = await query.range(start, end);
 
       if (data && data.length > 0) {
         setResources((prev) => [...prev, ...data]);
@@ -332,12 +379,39 @@ export default function HomeClient({ initialResources, initialBanners }: HomeCli
           </div>
         )}
 
+        {/* --- 2.5 分类筛选 --- */}
+        {categories.length > 0 && (
+          <div className="mb-6">
+             <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide no-scrollbar">
+               <Button
+                 variant={selectedCategory === null ? "default" : "outline"}
+                 size="sm"
+                 className={`rounded-full px-4 h-8 flex-shrink-0 font-bold transition-all ${selectedCategory === null ? 'bg-black text-white shadow-lg shadow-black/20' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+                 onClick={() => handleCategorySelect(null)}
+               >
+                 全部
+               </Button>
+               {categories.map((cat) => (
+                 <Button
+                   key={cat}
+                   variant={selectedCategory === cat ? "default" : "outline"}
+                   size="sm"
+                   className={`rounded-full px-4 h-8 flex-shrink-0 font-bold transition-all ${selectedCategory === cat ? 'bg-black text-white shadow-lg shadow-black/20' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+                   onClick={() => handleCategorySelect(cat)}
+                 >
+                   {cat}
+                 </Button>
+               ))}
+             </div>
+          </div>
+        )}
+
         {/* --- 3. 资源列表 --- */}
         <div>
           <div className="flex items-center gap-2 px-1 mb-4">
              <div className="w-1 h-5 bg-black rounded-full"></div>
              <h2 className="text-base font-bold text-gray-900 tracking-tight">
-               {searchQuery ? `"${searchQuery}" 搜索结果` : "最新上架"}
+               {searchQuery ? `"${searchQuery}" 搜索结果` : selectedCategory ? `${selectedCategory}` : "最新上架"}
              </h2>
           </div>
 
@@ -356,6 +430,13 @@ export default function HomeClient({ initialResources, initialBanners }: HomeCli
                           sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                           className="object-cover object-top transition-transform duration-500 ease-out group-hover:scale-105"
                         />
+                        {item.is_pinned && (
+                          <div className="absolute top-2 left-2 z-10">
+                            <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow-sm flex items-center gap-1">
+                              <Megaphone className="w-3 h-3" /> 置顶
+                            </span>
+                          </div>
+                        )}
                         <div className="absolute top-2 right-2">
                            <span className="bg-black/80 backdrop-blur text-white text-[10px] font-medium px-2 py-1 rounded-md">
                              {item.category}

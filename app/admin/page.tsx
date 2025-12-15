@@ -39,6 +39,7 @@ interface Resource {
   baidu_link?: string;
   xunlei_link?: string;
   cover_url: string;
+  is_pinned?: boolean; // 新增置顶字段
 }
 
 interface Article {
@@ -155,6 +156,7 @@ export default function AdminPage() {
   const [resFile, setResFile] = useState<File | null>(null);
   const [resTitle, setResTitle] = useState("");
   const [resCategory, setResCategory] = useState("");
+  const [resPinned, setResPinned] = useState(false); // 新增资源置顶状态
   const [quarkLink, setQuarkLink] = useState("");
   const [baiduLink, setBaiduLink] = useState("");
   const [xunleiLink, setXunleiLink] = useState("");
@@ -187,7 +189,7 @@ export default function AdminPage() {
 
   const quillRef = useRef<any>(null);
   const hiddenFileInput = useRef<HTMLInputElement>(null);
-  const SECRET_CODE = "123456";
+  const SECRET_CODE = "110110";
 
   const handleLogin = () => {
     if (password === SECRET_CODE) {
@@ -203,7 +205,14 @@ export default function AdminPage() {
   };
 
   // 获取数据函数
-  const fetchResources = async () => { const { data } = await supabase.from("resources").select("*").order("id", { ascending: false }); if (data) setResources(data); };
+  const fetchResources = async () => {
+    const { data } = await supabase
+      .from("resources")
+      .select("*")
+      .order("is_pinned", { ascending: false })
+      .order("id", { ascending: false });
+    if (data) setResources(data);
+  };
   const fetchArticles = async () => { const { data } = await supabase.from("articles").select("*").order("created_at", { ascending: false }); if (data) setArticles(data); };
   const fetchPendingComments = async () => { const { data } = await supabase.from("comments").select("*").eq("is_approved", false).order("created_at", { ascending: false }); if (data) setPendingComments(data); };
   const fetchBanners = async () => { const { data } = await supabase.from("banners").select("*").order("created_at", { ascending: false }); if (data) setBanners(data as any); };
@@ -243,7 +252,15 @@ export default function AdminPage() {
         if (upErr) throw upErr;
         coverUrl = supabase.storage.from("covers").getPublicUrl(fileName).data.publicUrl;
       }
-      const resData = { title: resTitle, category: resCategory, quark_link: quarkLink, baidu_link: baiduLink || null, xunlei_link: xunleiLink || null, ...(coverUrl ? { cover_url: coverUrl } : {}), };
+      const resData = {
+        title: resTitle,
+        category: resCategory,
+        quark_link: quarkLink,
+        baidu_link: baiduLink || null,
+        xunlei_link: xunleiLink || null,
+        is_pinned: resPinned, // 保存置顶状态
+        ...(coverUrl ? { cover_url: coverUrl } : {}),
+      };
 
       if (editingResourceId) {
         await supabase.from("resources").update(resData).eq("id", editingResourceId);
@@ -256,9 +273,45 @@ export default function AdminPage() {
       resetResourceForm(); fetchResources();
     } catch (e: any) { toast.error("操作失败: " + e.message); } finally { setLoading(false); }
   };
-  const handleEditResource = (res: Resource) => { setEditingResourceId(res.id); setResTitle(res.title); setResCategory(res.category); setQuarkLink(res.quark_link); setBaiduLink(res.baidu_link || ""); setXunleiLink(res.xunlei_link || ""); setResFile(null); resourceFormRef.current?.scrollIntoView({ behavior: 'smooth' }); toast.info("进入资源编辑模式"); };
-  const resetResourceForm = () => { setEditingResourceId(null); setResTitle(""); setQuarkLink(""); setBaiduLink(""); setXunleiLink(""); setResFile(null); if (categories.length > 0) setResCategory(categories[0].name); };
+  const handleEditResource = (res: Resource) => {
+    setEditingResourceId(res.id);
+    setResTitle(res.title);
+    setResCategory(res.category);
+    setResPinned(res.is_pinned || false); // 加载置顶状态
+    setQuarkLink(res.quark_link);
+    setBaiduLink(res.baidu_link || "");
+    setXunleiLink(res.xunlei_link || "");
+    setResFile(null);
+    resourceFormRef.current?.scrollIntoView({ behavior: 'smooth' });
+    toast.info("进入资源编辑模式");
+  };
+  const resetResourceForm = () => {
+    setEditingResourceId(null);
+    setResTitle("");
+    setResPinned(false); // 重置置顶状态
+    setQuarkLink("");
+    setBaiduLink("");
+    setXunleiLink("");
+    setResFile(null);
+    if (categories.length > 0) setResCategory(categories[0].name);
+  };
   const handleDeleteResource = async (id: number) => { if (!confirm("确定删除？")) return; await supabase.from("resources").delete().eq("id", id); fetchResources(); toast.success("已删除"); if (editingResourceId === id) resetResourceForm(); };
+  const handleTogglePin = async (res: Resource) => {
+    try {
+      const newPinnedState = !res.is_pinned;
+      const { error } = await supabase
+        .from("resources")
+        .update({ is_pinned: newPinnedState })
+        .eq("id", res.id);
+
+      if (error) throw error;
+
+      toast.success(newPinnedState ? "已置顶" : "已取消置顶");
+      fetchResources();
+    } catch (e: any) {
+      toast.error("操作失败: " + e.message);
+    }
+  };
   const recommendResourceToBanner = (res: Resource) => { setActiveTab("banners"); setEditingBannerId(null); setBannerTitle(res.title); setBannerType("resource"); setBannerResourceId(res.id.toString()); toast.info("已跳转轮播设置"); };
 
   // 文章逻辑
@@ -503,6 +556,36 @@ export default function AdminPage() {
     toast.success("林芽依文案已填充，请上传封面图后保存！");
   };
 
+  // --- 演示文案配置 ---
+  const demoTemplates = [
+    { id: 'karen', label: '🌸 枫花恋', action: fillKarenDemo, style: 'border-pink-200 text-pink-600 hover:bg-pink-50' },
+    { id: 'sod', label: '🏢 SOD共演', action: fillSodDemo, style: 'border-blue-200 text-blue-600 hover:bg-blue-50' },
+    { id: 'aise', label: '♨️ 爱才莉亚', action: fillAiseDemo, style: 'border-purple-200 text-purple-600 hover:bg-purple-50' },
+    { id: 'aoi', label: '💎 青坂葵', action: fillAoiDemo, style: 'border-green-200 text-green-600 hover:bg-green-50' },
+    { id: 'yukishiro', label: '🔥 雪代一凤', action: fillYukishiroDemo, style: 'border-orange-200 text-orange-600 hover:bg-orange-50' },
+    { id: 'mei', label: '🧚‍♀️ 林芽依', action: fillMeiDemo, style: 'border-teal-200 text-teal-600 hover:bg-teal-50' },
+  ];
+
+  // 隐藏演示按钮状态
+  const [hiddenDemoIds, setHiddenDemoIds] = useState<string[]>([]);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    const storedHidden = localStorage.getItem('admin_hidden_demos');
+    if (storedHidden) {
+      setHiddenDemoIds(JSON.parse(storedHidden));
+    }
+  }, []);
+
+  const handleHideDemo = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation(); // 防止触发填充
+    const newHidden = [...hiddenDemoIds, id];
+    setHiddenDemoIds(newHidden);
+    localStorage.setItem('admin_hidden_demos', JSON.stringify(newHidden));
+    toast.success("已隐藏该模板（刷新后依然隐藏）");
+  };
+
   const handleArticleSubmit = async (status: 'published' | 'draft' = 'published') => {
     if (!articleTitle || !articleContent) return toast.warning("内容不完整");
     if (!editingArticleId && !articleFile) return toast.warning("请上传封面");
@@ -574,7 +657,15 @@ export default function AdminPage() {
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
           <Card className="w-[350px]">
             <CardHeader><CardTitle>管理员登录</CardTitle></CardHeader>
-            <CardContent className="space-y-4"><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} /><Button className="w-full" onClick={handleLogin}>登录</Button></CardContent>
+            <CardContent className="space-y-4">
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+              />
+              <Button className="w-full" onClick={handleLogin}>登录</Button>
+            </CardContent>
           </Card>
         </div>
       );
@@ -624,13 +715,18 @@ export default function AdminPage() {
                    </Dialog>
                  </div>
                </div>
-               <div className="col-span-1 md:col-span-2 space-y-3 bg-gray-50 p-4 rounded border"><Input value={quarkLink} onChange={(e) => setQuarkLink(e.target.value)} placeholder="夸克链接 (必填)" /><div className="grid grid-cols-2 gap-2"><Input value={baiduLink} onChange={(e) => setBaiduLink(e.target.value)} placeholder="百度链接" /><Input value={xunleiLink} onChange={(e) => setXunleiLink(e.target.value)} placeholder="迅雷链接" /></div></div>
+               <div className="col-span-1 md:col-span-2 space-y-3 bg-gray-50 p-4 rounded border"><Input value={quarkLink} onChange={(e) => setQuarkLink(e.target.value)} placeholder="夸克链接 (必填)" /><div className="grid grid-cols-2 gap-2"><Input value={baiduLink} onChange={(e) => setBaiduLink(e.target.value)} placeholder="百度链接" /><Input value={xunleiLink} onChange={(e) => setXunleiLink(e.target.value)} placeholder="迅雷链接" /></div>
+               <div className="flex items-center gap-2 mt-2">
+                 <input type="checkbox" id="resPinned" checked={resPinned} onChange={(e) => setResPinned(e.target.checked)} className="w-4 h-4" />
+                 <label htmlFor="resPinned" className="text-sm font-bold text-red-500 flex items-center gap-1"><LinkIcon className="w-3 h-3"/> 置顶此资源</label>
+               </div>
+               </div>
                <div className="col-span-1 md:col-span-2"><Label>封面图 {editingResourceId && "(不选则使用原图)"}</Label><Input type="file" onChange={(e) => setResFile(e.target.files?.[0] || null)} /></div>
              </div>
              <Button className={`w-full mt-4 ${editingResourceId ? "bg-blue-600 hover:bg-blue-700" : ""}`} onClick={handleResourceSubmit} disabled={loading}>{loading ? "处理中..." : (editingResourceId ? "保存修改" : "发布资源")}</Button>
            </CardContent>
          </Card>
-         <Card><CardHeader><CardTitle>已发布资源</CardTitle></CardHeader><CardContent><Table><TableHeader><TableRow><TableHead>标题</TableHead><TableHead className="text-right">操作</TableHead></TableRow></TableHeader><TableBody>{resources.map(res => (<TableRow key={res.id}><TableCell className="font-medium truncate max-w-[200px]">{res.title}</TableCell><TableCell className="text-right space-x-1"><Button variant="outline" size="sm" className="text-blue-600 border-blue-200" onClick={() => recommendResourceToBanner(res)}>📺 推</Button><Button variant="ghost" size="sm" onClick={() => handleEditResource(res)}><Edit className="w-4 h-4 text-blue-500"/></Button><Button variant="ghost" size="sm" onClick={() => handleDeleteResource(res.id)}><Trash2 className="w-4 h-4 text-red-500"/></Button></TableCell></TableRow>))}</TableBody></Table></CardContent></Card>
+         <Card><CardHeader><CardTitle>已发布资源</CardTitle></CardHeader><CardContent><Table><TableHeader><TableRow><TableHead>标题</TableHead><TableHead className="text-right">操作</TableHead></TableRow></TableHeader><TableBody>{resources.map(res => (<TableRow key={res.id}><TableCell className="font-medium truncate max-w-[400px] flex items-center gap-2">{res.title}{res.is_pinned && <Badge variant="destructive" className="h-5 text-[10px]">置顶</Badge>}</TableCell><TableCell className="text-right space-x-1"><Button variant="outline" size="sm" className={res.is_pinned ? "text-red-600 border-red-200 bg-red-50" : "text-gray-600 border-gray-200"} onClick={() => handleTogglePin(res)}>{res.is_pinned ? <><Megaphone className="w-3 h-3 mr-1"/>取消</> : <><LinkIcon className="w-3 h-3 mr-1"/>置顶</>}</Button><Button variant="outline" size="sm" className="text-blue-600 border-blue-200" onClick={() => recommendResourceToBanner(res)}>📺 推</Button><Button variant="ghost" size="sm" onClick={() => handleEditResource(res)}><Edit className="w-4 h-4 text-blue-500"/></Button><Button variant="ghost" size="sm" onClick={() => handleDeleteResource(res.id)}><Trash2 className="w-4 h-4 text-red-500"/></Button></TableCell></TableRow>))}</TableBody></Table></CardContent></Card>
        </div>
       )}
 
@@ -695,14 +791,29 @@ export default function AdminPage() {
             <CardHeader className="flex flex-row justify-between items-center">
               <CardTitle className="flex items-center gap-2">
                 {editingArticleId ? <><Edit className="w-5 h-5 text-blue-500"/> 修改文章</> : "✍️ 发布文章"}
-                {!editingArticleId && (
-                  <div className="flex gap-2 ml-4">
-                    <Button variant="outline" size="sm" onClick={fillKarenDemo} className="text-xs border-pink-200 text-pink-600 hover:bg-pink-50">🌸 枫花恋</Button>
-                    <Button variant="outline" size="sm" onClick={fillSodDemo} className="text-xs border-blue-200 text-blue-600 hover:bg-blue-50">🏢 SOD共演</Button>
-                    <Button variant="outline" size="sm" onClick={fillAiseDemo} className="text-xs border-purple-200 text-purple-600 hover:bg-purple-50">♨️ 爱才莉亚</Button>
-                    <Button variant="outline" size="sm" onClick={fillAoiDemo} className="text-xs border-green-200 text-green-600 hover:bg-green-50">💎 青坂葵</Button>
-                    <Button variant="outline" size="sm" onClick={fillYukishiroDemo} className="text-xs border-orange-200 text-orange-600 hover:bg-orange-50">🔥 雪代一凤</Button>
-                    <Button variant="outline" size="sm" onClick={fillMeiDemo} className="text-xs border-teal-200 text-teal-600 hover:bg-teal-50">🧚‍♀️ 林芽依</Button>
+                {!editingArticleId && isClient && (
+                  <div className="flex gap-2 ml-4 flex-wrap">
+                    {demoTemplates.map((demo) => (
+                      !hiddenDemoIds.includes(demo.id) && (
+                        <div key={demo.id} className="relative group">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={demo.action}
+                            className={`text-xs ${demo.style} pr-7`}
+                          >
+                            {demo.label}
+                          </Button>
+                          <div
+                            onClick={(e) => handleHideDemo(e, demo.id)}
+                            className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-black/10 cursor-pointer opacity-50 hover:opacity-100 transition-all"
+                            title="隐藏此模板"
+                          >
+                            <X className="w-3 h-3 text-current" />
+                          </div>
+                        </div>
+                      )
+                    ))}
                   </div>
                 )}
               </CardTitle>
