@@ -556,6 +556,180 @@ export default function AdminPage() {
     toast.success("林芽依文案已填充，请上传封面图后保存！");
   };
 
+  // 高村澪 演示文案填充
+  const fillMioDemo = () => {
+    setArticleTitle("【严选人妻】177cm的压迫感！SOD超模级新人高村澪 (Takamura Mio) 的反差M属性");
+    setArticleContent(`
+<p>你和我一样，对<strong>“长腿妹子”</strong>没有抵抗力吗？</p>
+<p>如果答案是肯定的，那么这位在 <strong>SOD 本物人妻</strong> 系列出道的新人——<strong>高村澪 (高村みお)</strong>，你绝对不能错过。</p>
+
+<h4>👠 177cm 的顶级“超模”身材</h4>
+<p>在业界，身高超过 170cm 的女优就已经算是稀有动物了，而高村澪的身高竟然达到了惊人的 <strong>177cm</strong>！</p>
+<p>这不仅意味着她拥有一双逆天的大长腿，更意味着她在画面中会呈现出一种<strong>“统治级”的视觉压迫感</strong>。33 岁的熟龄气质，加上这种完全不输给职业模特的九头身比例，光是站在那里，就是一道风景。</p>
+
+<h4>⛓️ 反差萌：女王外表下的“抖M”灵魂</h4>
+<p>看到这种高冷御姐型的人妻，很多人第一反应是“女王”。但 SOD 这次剧本写得很有意思：</p>
+<ul>
+<li><strong>人设</strong>：老公是忙碌的摄影师，因为身高比她矮，加上工作原因，长期冷落了她。</li>
+<li><strong>属性</strong>：外表看起来是高不可攀的贵妇，内心深处却是一个渴望被征服、被羞辱的 <strong>抖M (受虐狂)</strong>。</li>
+</ul>
+<p><strong>这种反差才是最致命的。</strong> 她不是为了寻求快感而做爱，而是通过<strong>身体和心理的被虐待</strong>来获得满足。看着这么一位高挑的美人在镜头前被弄得满脸通红、泪眼婆娑，那种<strong>“把高岭之花拉下神坛”</strong>的背德感瞬间拉满。</p>
+
+<h4>🔥 视觉盛宴：小马拉大车</h4>
+<p>业界对于这种长腿女优的用法向来很懂：</p>
+<ul>
+<li><strong>体型差</strong>：特意安排体型较小的男优，营造出一种<strong>“小马拉大车”</strong>的视觉冲击。不管先天的身高差距有多大，这种征服巨人的过程，本身就是一种强烈的性张力。</li>
+<li><strong>站立位</strong>：片中有大量的<strong>后背位</strong>和<strong>站立位</strong>镜头。这是展示她那双极品美腿的最佳角度，腿控党绝对会一本满足。</li>
+</ul>
+
+<h4>💡 严选点评</h4>
+<p>高村澪是业界难得一见的“稀有种”。</p>
+<p>如果你看腻了小鸟依人的萝莉，想换换口味体验一下<strong>“被长腿包围”</strong>的窒息感；或者你本身就是个<strong>腿控/M属性爱好者</strong>，这部作品绝对能打开你的新世界大门。</p>
+
+<p><strong>✅ 推荐指数：⭐⭐⭐⭐⭐</strong><br>
+<strong>🔥 关键词：</strong> #高村澪 #高村みお #SOD #本物人妻 #177cm #长腿 #抖M</p>
+    `);
+    toast.success("高村澪文案已填充，请上传封面图后保存！");
+  };
+
+  // 水川菜月 演示文案填充
+  const fillNatsukiDemo = () => {
+    setArticleTitle("【严选新人】(CAWD-923) “不悯可爱”的内定女主播：水川菜月 (Mizukawa Natsuki) 的下海真相");
+    setArticleContent(`
+<p>最近 <strong>Kawaii* (可爱社)</strong> 推出了一位非常有意思的新人——<strong>水川菜月 (水川菜月)</strong>。</p>
+<p>片商给她的人设是“新卒女子アナ（刚毕业的女主播）”。这种设定在业界其实不少见，但水川菜月的特别之处在于：<strong>她是真的放弃了已经内定的主播工作，主动选择来拍 AV 的。</strong></p>
+
+<h4>🎤 为什么放弃大好前程？</h4>
+<p>按照剧本（或者说是她本人的告白），她为了当主播付出了巨大的努力：</p>
+<ul>
+<li><strong>青春献给网球</strong>：因为听说有专长更容易被电视台选中，所以学生时代一直在打网球。</li>
+<li><strong>禁欲三年半</strong>：因为听说主播会被做身家调查，为了身家清白，她大学期间完全不谈恋爱，甚至强制禁欲。</li>
+</ul>
+<p>然而，就在真的拿到内定通知后，她突然“觉醒”了。这种为了虚名而压抑本性的生活让她感到窒息，来自下半身的强烈欲望让她决定——<strong>去他喵的主播，老娘要快乐做爱！</strong></p>
+
+<h4>👓 造型与身材：欧吉桑杀手</h4>
+<p>不得不说，Kawaii* 这次选角很毒辣。</p>
+<ul>
+<li><strong>造型</strong>：麻花辫 + 黑框眼镜。这种土气中带着清纯的造型，完美契合了“刚毕业大学生”的青涩感，对于喜欢“玩弄乖乖女”的大叔们来说，简直是暴击。</li>
+<li><strong>身材</strong>：虽然不是巨乳，但胜在<strong>浑圆坚挺</strong>，腰部曲线也非常漂亮。加上浓密的阴毛和圆润的屁股，整个人散发着一种<strong>“虽然不惊艳，但非常实用”</strong>的肉感。</li>
+</ul>
+
+<h4>🔥 禁欲后的反弹：敏感度爆表</h4>
+<p>因为禁欲了三年半（虽然自曝有过一夜情和卡拉OK打炮经历，笑），她在片中的表现可以用<strong>“饥渴”</strong>来形容。</p>
+<p>她是那种<strong>一碰就湿、一摸就颤抖</strong>的超敏感体质。在片中，她不仅吃鸡鸡非常用力，还主动要求导演“多找几个能打的”，直接上演 3P 大战。这种<strong>“为了弥补失去的青春而疯狂索取”</strong>的状态，真的非常带感。</p>
+
+<h4>💡 严选点评</h4>
+<p>如果你喜欢<strong>“眼镜娘”</strong>、<strong>“乖乖女堕落”</strong>或者<strong>“高敏感度”</strong>的女优，水川菜月绝对是你的菜。</p>
+<p>她就像是你身边那个不起眼的眼镜妹，摘下眼镜后却是一个渴望被填满的色情野兽。Kawaii* 这次的新人，我很看好！</p>
+
+<p><strong>✅ 推荐指数：⭐⭐⭐⭐⭐</strong><br>
+<strong>🔥 关键词：</strong> #水川菜月 #MizukawaNatsuki #Kawaii* #女主播 #眼镜娘 #反差萌</p>
+<p><strong>📌 番号：</strong> CAWD-923<br>
+<strong>📅 发行日：</strong> 2026/01/06</p>
+    `);
+    toast.success("水川菜月文案已填充，请上传封面图后保存！");
+  };
+
+  // 木下日葵 演示文案填充
+  const fillHimariDemo = () => {
+    setArticleTitle("【严选情报】从 FC2 弃将到三社专属？木下日葵 (Kinoshita Himari) 的逆袭之路");
+    setArticleContent(`
+<p>最近业界有个大新闻：那位曾经的“发片机器”——<strong>木下日葵 (木下ひまり)</strong>，竟然一口气拿下了 DAS、Fitch 和 Royal 三家片商的专属合约！</p>
+<p>要知道，在如今这个“大专属时代”，能被一家片商收编就已经很不容易了，而木下日葵这次直接实现了“三级跳”。这背后到底有什么故事？</p>
+
+<h4>📉 曾经的“漂泊生涯”</h4>
+<p>熟悉她的朋友都知道，木下日葵的经历其实挺坎坷的：</p>
+<ul>
+<li><strong>黑历史</strong>：在正式出道前，她曾在 FC2 平台拍过无码流出片（下马）。</li>
+<li><strong>劳模时期</strong>：为了生存，她一度成为了业界最拼的“发片机器”，一个月要拍 25 到 30 部片子！虽然拿下了 FANZA 销量冠军，但这种高强度的消耗战也让人心疼。</li>
+</ul>
+<p>但即便如此，她依然凭借着<strong>美巨尻</strong>和<strong>大长腿</strong>的硬实力，在业界站稳了脚跟。</p>
+
+<h4>🔥 专属首作：DAS 的恶趣味？</h4>
+<p>这次的专属出道作，片商 DAS 给她安排了一个非常“炸裂”的剧本：</p>
+<p><strong>剧情设定：</strong> 她饰演一位在学校饱受欺凌的女教师。为了复仇，她许愿想要力量，结果一觉醒来——<strong>她长出了一根大丁丁！</strong></p>
+<p><strong>看点分析：</strong></p>
+<ul>
+<li><strong>扶他那（Futanari）</strong>：虽然是道具，但 DAS 的制作水准向来很高。看着拥有美腿巨尻的木下老师，下面却挂着一根火力强大的巨根，这种<strong>“生理构造的反差”</strong>本身就极具视觉冲击力。</li>
+<li><strong>逆袭复仇</strong>：从被学生欺负到用巨根征服全班，这种剧情虽然荒诞，但配合木下日葵那羞耻中带着快感的表情，真的让人欲罢不能。</li>
+</ul>
+
+<h4>💡 严选点评</h4>
+<p>木下日葵能拿到这份专属合约，绝对是实至名归。她证明了：<strong>只要有实力，哪怕起点再低（FC2下马），也能逆袭成为正规军的王牌。</strong></p>
+<p>如果你喜欢<strong>美腿</strong>、<strong>巨尻</strong>，或者对<strong>扶他/女体化</strong>这种重口味题材感兴趣，这部作品绝对是 2026 年初必看的佳作。</p>
+
+<p><strong>✅ 推荐指数：⭐⭐⭐⭐⭐</strong><br>
+<strong>🔥 关键词：</strong> #木下日葵 #KinoshitaHimari #专属出道 #扶他 #大丁丁 #美腿巨尻</p>
+    `);
+    toast.success("木下日葵文案已填充，请上传封面图后保存！");
+  };
+
+  // 古川穗花 演示文案填充
+  const fillHonokaDemo = () => {
+    setArticleTitle("【严选鉴赏】(IPZZ-776) 腿软到无法站立？古川穗花 (Furukawa Honoka) 改名前的“绝唱”！");
+    setArticleContent(`
+<p>最近 <strong>Ideapocket (IP社)</strong> 发布了一支看似普通，实则暗藏玄机的作品。</p>
+<p>封面上的女优大家都很熟悉——<strong>古川穗花 (古川ほのか)</strong>。但细心的老司机可能发现了：她不是早就改名叫 <strong>古乃穗乃 (古乃ほの)</strong> 并且移籍了吗？</p>
+
+<h4>🔍 “绝唱”背后的秘密</h4>
+<p>没错，这支作品其实是她在<strong>更换事务所之前的“库存”</strong>。随着她在今年 7 月正式移籍，IP 社现在发行的这支片子，很有可能就是她以“古川穗花”这个艺名留下的<strong>最后一部作品</strong>。</p>
+<p>这不仅仅是一部 AV，更是一个时代的句号。</p>
+
+<h4>💊 媚药 OD：从清纯到崩坏</h4>
+<p>这次的企划非常简单粗暴：<strong>媚药 OD (过量)</strong>。虽然我们都知道业界所谓的“春药”大多是演技，但古川穗花的表现力真的让人惊叹：</p>
+<ul>
+<li><strong>反差感</strong>：平时她是那种安静、话不多、身材瘦削的清纯美少女。</li>
+<li><strong>崩坏感</strong>：在“药效”发作后，她眼神迷离、浑身抽搐、甚至因为快感过强而<strong>双腿发软，根本站不稳</strong>。</li>
+</ul>
+<p>封面那张被男优搀扶着才能走路的剧照，绝对不是摆拍。那是被彻底“干服”后的真实生理反应。</p>
+
+<h4>🌊 潮吹暴走：瘦削身体里的爆发力</h4>
+<p>别看她瘦瘦小小的，没几两肉，但她的爆发力极其惊人。</p>
+<p>在鬼手男优的疯狂进攻下，她上演了<strong>连续痉挛 + 疯狂潮吹</strong>的戏码。那种因为过度敏感而导致全身不受控制的颤抖，配合她那张无辜的脸蛋，这种<strong>“被玩坏”</strong>的视觉冲击力简直炸裂。</p>
+
+<h4>💡 严选点评</h4>
+<p>如果你喜欢<strong>瘦削型美少女</strong>、<strong>潮吹</strong>或者<strong>“恶堕/崩坏”</strong>题材，这部作品绝对是必收之作。</p>
+<p>作为古川穗花时代的“遗作”，它完美地展示了这位女优最诱人的一面：<strong>极致的敏感与脆弱。</strong> 让我们看完这部片，一起期待全新的“古乃穗乃”吧！</p>
+
+<p><strong>✅ 推荐指数：⭐⭐⭐⭐⭐</strong><br>
+<strong>🔥 关键词：</strong> #古川穗花 #古川ほのか #IP社 #媚药 #潮吹 #腿软 #改名绝唱</p>
+<p><strong>📌 番号：</strong> IPZZ-776<br>
+<strong>📅 发行日：</strong> 2026/01/13</p>
+    `);
+    toast.success("古川穗花文案已填充，请上传封面图后保存！");
+  };
+
+  // 七嶋舞 演示文案填充
+  const fillMaiDemo = () => {
+    setArticleTitle("【重磅解禁】(PRVR-047) 苦等4年！“真人版 Hello Kitty”七嶋舞 (Nanashima Mai) 终于立体化了！");
+    setArticleContent(`
+<p>2021 年 6 月出道至今，粉丝们苦等了 4 年多，那个被称为<strong>“真人版 Hello Kitty”</strong>的完美美少女——<strong>七嶋舞 (七嶋舞)</strong>，终于迎来了她的第一支 VR 作品！</p>
+<p>这不仅是七嶋舞个人的突破，更是片商 <strong>Prestige (蚊香社)</strong> 的一次罕见操作。</p>
+
+<h4>🕶️ 蚊香社的 VR 困境：为什么这么难？</h4>
+<p>熟悉蚊香社的朋友都知道，这家片商对 VR 并不感冒。上一支 VR 作品还要追溯到去年 6 月的<strong>凉森玲梦</strong>，中间整整断档了一年半。</p>
+<p>而在 S1 这种大厂，女优通常出道第 3、4 作就会安排 VR 拍摄。所以，七嶋舞这次的 VR 解禁，含金量极高。她甚至跳过了<strong>铃村爱里</strong>和<strong>八挂海</strong>这两位前辈，直接拿到了这个宝贵的 VR 资源。这足以证明片商对她的重视程度。</p>
+
+<h4>🎀 零距离接触“无死角美少女”</h4>
+<p>七嶋舞之所以被称为“真人版 Hello Kitty”，就是因为她那张<strong>精致到甚至有点不真实</strong>的脸蛋，以及完全没有死角的完美身材。</p>
+<p>在 2D 屏幕里，她已经足够可爱了；而在 VR 的 3D 视野下，这种冲击力是指数级上升的：</p>
+<ul>
+<li><strong>超近距离对视</strong>：你能清晰地看到她那双无辜的大眼睛就在你面前眨动，仿佛能感受到她的呼吸。</li>
+<li><strong>沉浸式体验</strong>：当她骑在你身上（骑乘位）或者凑近亲吻时，那种<strong>“虽然碰不到，但感觉就在怀里”</strong>的真实感，绝对能让你心跳加速。</li>
+</ul>
+
+<h4>💡 严选点评</h4>
+<p>虽然来得晚了一些，但这绝对是值得等待的。</p>
+<p>对于七嶋舞的粉丝来说，这是一次圆梦的机会；对于 VR 爱好者来说，这更是一场视觉盛宴。希望这次的销量能打动蚊香社，以后多拍点 VR 吧（铃村爱里还没拍呢！）。</p>
+
+<p><strong>✅ 推荐指数：⭐⭐⭐⭐⭐</strong><br>
+<strong>🔥 关键词：</strong> #七嶋舞 #NanashimaMai #蚊香社 #VR解禁 #HelloKitty #无死角美少女</p>
+<p><strong>📌 番号：</strong> PRVR-047<br>
+<strong>📅 发行日：</strong> 2026/01/10</p>
+    `);
+    toast.success("七嶋舞文案已填充，请上传封面图后保存！");
+  };
+
   // --- 演示文案配置 ---
   const demoTemplates = [
     { id: 'karen', label: '🌸 枫花恋', action: fillKarenDemo, style: 'border-pink-200 text-pink-600 hover:bg-pink-50' },
@@ -564,6 +738,11 @@ export default function AdminPage() {
     { id: 'aoi', label: '💎 青坂葵', action: fillAoiDemo, style: 'border-green-200 text-green-600 hover:bg-green-50' },
     { id: 'yukishiro', label: '🔥 雪代一凤', action: fillYukishiroDemo, style: 'border-orange-200 text-orange-600 hover:bg-orange-50' },
     { id: 'mei', label: '🧚‍♀️ 林芽依', action: fillMeiDemo, style: 'border-teal-200 text-teal-600 hover:bg-teal-50' },
+    { id: 'mio', label: '👠 高村澪', action: fillMioDemo, style: 'border-indigo-200 text-indigo-600 hover:bg-indigo-50' },
+    { id: 'natsuki', label: '👓 水川菜月', action: fillNatsukiDemo, style: 'border-cyan-200 text-cyan-600 hover:bg-cyan-50' },
+    { id: 'himari', label: '🌻 木下日葵', action: fillHimariDemo, style: 'border-yellow-200 text-yellow-600 hover:bg-yellow-50' },
+    { id: 'honoka', label: '💊 古川穗花', action: fillHonokaDemo, style: 'border-rose-200 text-rose-600 hover:bg-rose-50' },
+    { id: 'mai', label: '🎀 七嶋舞', action: fillMaiDemo, style: 'border-pink-300 text-pink-600 hover:bg-pink-50' },
   ];
 
   // 隐藏演示按钮状态
@@ -673,6 +852,17 @@ export default function AdminPage() {
 
   return (
     <div className="container mx-auto p-4 md:p-6 max-w-5xl pb-20">
+      {/* 全局样式覆盖：让编辑器内的图片显示圆角 */}
+      <style jsx global>{`
+        .ql-editor img {
+          border-radius: 0.5rem;
+          margin-top: 1rem;
+          margin-bottom: 1rem;
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+          max-width: 100%;
+          height: auto;
+        }
+      `}</style>
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold flex items-center gap-2">🛡️ 站长控制台 V6.0</h1>
         <Button variant="outline" onClick={() => setIsLoggedIn(false)}>退出</Button>

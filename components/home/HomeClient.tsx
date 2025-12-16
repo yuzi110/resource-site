@@ -311,10 +311,10 @@ export default function HomeClient({ initialResources, initialBanners }: HomeCli
               <span className="text-xs font-bold text-gray-500 tracking-widest uppercase">Premium</span>
             </div>
             <Link href="/blog" className="md:hidden relative">
-               <Button variant="ghost" size="sm" className={`text-gray-600 hover:bg-gray-100 rounded-lg px-3 ${hasNewArticle ? 'text-red-600 bg-red-50 hover:bg-red-100' : ''}`}>
-                 <BookOpen className={`w-4 h-4 mr-1 ${hasNewArticle ? 'text-red-500' : ''}`}/> 专栏
+               <Button variant="ghost" size="sm" className={`text-gray-900 bg-yellow-400 hover:bg-yellow-500 rounded-lg px-3 font-bold border border-yellow-500 ${hasNewArticle ? 'text-white bg-gradient-to-r from-red-600 to-orange-500 border-transparent' : ''}`}>
+                 <Megaphone className={`w-4 h-4 mr-1 ${hasNewArticle ? 'text-white' : 'text-black'}`}/> 每日发车
                </Button>
-               {hasNewArticle && <span className="absolute top-1 right-1 w-2 h-2 bg-red-600 rounded-full border border-white animate-pulse"></span>}
+               {hasNewArticle && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-600 rounded-full border-2 border-white animate-pulse"></span>}
             </Link>
           </div>
           <div className="flex items-center gap-3 w-full md:max-w-md">
@@ -323,10 +323,16 @@ export default function HomeClient({ initialResources, initialBanners }: HomeCli
               <Input type="search" placeholder="搜索资源..." className="pl-10 pr-4 h-10 bg-gray-100 border-transparent focus:bg-white focus:border-gray-300 focus:ring-2 focus:ring-black/5 rounded-xl w-full text-sm transition-all" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </form>
             <Link href="/blog" className="hidden md:flex flex-shrink-0 relative">
-               <Button variant="ghost" className={`font-medium rounded-xl ${hasNewArticle ? 'text-red-600 bg-red-50 hover:bg-red-100' : 'text-gray-600 hover:bg-gray-100 hover:text-black'}`}>
-                 <BookOpen className={`w-4 h-4 mr-2 ${hasNewArticle ? 'text-red-500' : ''}`}/> 精选专栏
+               <Button variant="ghost" className={`font-black rounded-xl border-2 transition-all hover:scale-105 ${hasNewArticle ? 'text-white bg-gradient-to-r from-red-600 to-orange-500 border-transparent hover:from-red-700 hover:to-orange-600 shadow-lg shadow-red-500/30' : 'text-gray-900 bg-yellow-400 border-yellow-500 hover:bg-yellow-500 hover:border-yellow-600'}`}>
+                 <div className="flex items-center gap-2">
+                   <div className="relative">
+                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-50"></span>
+                     <Megaphone className={`w-4 h-4 ${hasNewArticle ? 'text-white' : 'text-black'}`}/>
+                   </div>
+                   <span>每日准时发车</span>
+                 </div>
                </Button>
-               {hasNewArticle && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-600 rounded-full border-2 border-white animate-pulse"></span>}
+               {hasNewArticle && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full border-2 border-white animate-pulse"></span>}
             </Link>
           </div>
         </div>
