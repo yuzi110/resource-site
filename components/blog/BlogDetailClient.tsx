@@ -260,6 +260,104 @@ function ShareSection({ title, id }: { title: string, id: string }) {
   );
 }
 
+interface CommentItemProps {
+  comment: Comment;
+  isChild?: boolean;
+  likedComments: number[];
+  handleLikeComment: (id: number) => void;
+  replyingTo: number | null;
+  setReplyingTo: (id: number | null) => void;
+  replyContent: string;
+  setReplyContent: (content: string) => void;
+  handleSubmitReply: (parentId: number) => void;
+  submitting: boolean;
+}
+
+const CommentItem = ({
+  comment,
+  isChild = false,
+  likedComments,
+  handleLikeComment,
+  replyingTo,
+  setReplyingTo,
+  replyContent,
+  setReplyContent,
+  handleSubmitReply,
+  submitting
+}: CommentItemProps) => {
+  return (
+    <div className={`flex gap-3 ${isChild ? "mt-4 ml-10 border-l-2 pl-4 border-gray-100" : ""}`}>
+      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+        <User className="w-4 h-4 text-blue-500" />
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center justify-between mb-1">
+          <span className="font-bold text-sm text-gray-700">{comment.nickname}</span>
+          <span className="text-xs text-gray-400">{new Date(comment.created_at).toLocaleDateString()}</span>
+        </div>
+        <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg rounded-tl-none">
+          {comment.content}
+        </p>
+
+        <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+          <button
+            onClick={() => handleLikeComment(comment.id)}
+            className={`flex items-center gap-1 hover:text-red-500 transition-colors ${likedComments.includes(comment.id) ? "text-red-500" : ""}`}
+          >
+            <ThumbsUp className="w-3 h-3" />
+            <span>{comment.like_count || 0}</span>
+          </button>
+          <button
+            onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+            className="flex items-center gap-1 hover:text-blue-500 transition-colors"
+          >
+            <MessageCircle className="w-3 h-3" />
+            <span>回复</span>
+          </button>
+        </div>
+
+        {replyingTo === comment.id && (
+          <div className="mt-3 animate-in fade-in slide-in-from-top-2">
+             <Input
+              placeholder={`回复 @${comment.nickname}...`}
+              className="mb-2 text-sm h-9"
+              value={replyContent}
+              onChange={(e) => setReplyContent(e.target.value)}
+              autoFocus
+            />
+            <div className="flex justify-end gap-2">
+              <Button size="sm" variant="ghost" onClick={() => setReplyingTo(null)} className="h-7 text-xs">取消</Button>
+              <Button size="sm" onClick={() => handleSubmitReply(comment.id)} disabled={submitting} className="h-7 text-xs bg-blue-600 hover:bg-blue-700">
+                发送回复
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {comment.children && comment.children.length > 0 && (
+          <div className="mt-2">
+            {comment.children.map(child => (
+              <CommentItem
+                key={child.id}
+                comment={child}
+                isChild={true}
+                likedComments={likedComments}
+                handleLikeComment={handleLikeComment}
+                replyingTo={replyingTo}
+                setReplyingTo={setReplyingTo}
+                replyContent={replyContent}
+                setReplyContent={setReplyContent}
+                handleSubmitReply={handleSubmitReply}
+                submitting={submitting}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 interface BlogDetailClientProps {
   initialArticle: Article;
   initialComments: Comment[];
@@ -403,68 +501,6 @@ export default function BlogDetailClient({ initialArticle, initialComments }: Bl
     }
   };
 
-  const CommentItem = ({ comment, isChild = false }: { comment: Comment, isChild?: boolean }) => {
-    return (
-      <div className={`flex gap-3 ${isChild ? "mt-4 ml-10 border-l-2 pl-4 border-gray-100" : ""}`}>
-        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-          <User className="w-4 h-4 text-blue-500" />
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-1">
-            <span className="font-bold text-sm text-gray-700">{comment.nickname}</span>
-            <span className="text-xs text-gray-400">{new Date(comment.created_at).toLocaleDateString()}</span>
-          </div>
-          <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg rounded-tl-none">
-            {comment.content}
-          </p>
-
-          <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
-            <button
-              onClick={() => handleLikeComment(comment.id)}
-              className={`flex items-center gap-1 hover:text-red-500 transition-colors ${likedComments.includes(comment.id) ? "text-red-500" : ""}`}
-            >
-              <ThumbsUp className="w-3 h-3" />
-              <span>{comment.like_count || 0}</span>
-            </button>
-            <button
-              onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-              className="flex items-center gap-1 hover:text-blue-500 transition-colors"
-            >
-              <MessageCircle className="w-3 h-3" />
-              <span>回复</span>
-            </button>
-          </div>
-
-          {replyingTo === comment.id && (
-            <div className="mt-3 animate-in fade-in slide-in-from-top-2">
-               <Input
-                placeholder={`回复 @${comment.nickname}...`}
-                className="mb-2 text-sm h-9"
-                value={replyContent}
-                onChange={(e) => setReplyContent(e.target.value)}
-                autoFocus
-              />
-              <div className="flex justify-end gap-2">
-                <Button size="sm" variant="ghost" onClick={() => setReplyingTo(null)} className="h-7 text-xs">取消</Button>
-                <Button size="sm" onClick={() => handleSubmitReply(comment.id)} disabled={submitting} className="h-7 text-xs bg-blue-600 hover:bg-blue-700">
-                  发送回复
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {comment.children && comment.children.length > 0 && (
-            <div className="mt-2">
-              {comment.children.map(child => (
-                <CommentItem key={child.id} comment={child} isChild={true} />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-white pb-20">
       <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b px-4 py-3 flex items-center gap-3">
@@ -559,7 +595,18 @@ export default function BlogDetailClient({ initialArticle, initialComments }: Bl
               <div className="text-center py-10 text-gray-300 text-sm">暂无留言，快来抢沙发~</div>
             ) : (
               comments.map((comment) => (
-                <CommentItem key={comment.id} comment={comment} />
+                <CommentItem
+                  key={comment.id}
+                  comment={comment}
+                  likedComments={likedComments}
+                  handleLikeComment={handleLikeComment}
+                  replyingTo={replyingTo}
+                  setReplyingTo={setReplyingTo}
+                  replyContent={replyContent}
+                  setReplyContent={setReplyContent}
+                  handleSubmitReply={handleSubmitReply}
+                  submitting={submitting}
+                />
               ))
             )}
           </div>

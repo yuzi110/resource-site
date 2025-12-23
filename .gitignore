@@ -42,3 +42,6 @@ next-env.d.ts
 
 # local documentation
 PROJECT_PLAN.md
+
+# large assets
+downloaded_assets/
