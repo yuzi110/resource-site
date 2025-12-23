@@ -4,6 +4,16 @@ import type { NextRequest } from 'next/server';
 // Next.js 16+ convention: middleware is renamed to proxy
 export function proxy(request: NextRequest) {
   const userAgent = request.headers.get('user-agent')?.toLowerCase() || '';
+  const host = request.headers.get('host') || '';
+
+  // 0. 安全拦截：禁止直接 IP 访问 (防扫描)
+  // 如果 Host 是纯 IP (如 1.2.3.4) 且不是局域网 IP (如 192.168.x.x, 127.0.0.1, localhost)
+  const isIpAddress = /^(\d{1,3}\.){3}\d{1,3}(:\d+)?$/.test(host);
+  const isLocal = host.includes('localhost') || host.includes('127.0.0.1') || host.startsWith('192.168.') || host.startsWith('10.');
+
+  if (isIpAddress && !isLocal) {
+    return new NextResponse('Forbidden', { status: 403 });
+  }
   
   // 1. 识别微信和QQ环境
   const isWeChat = /micromessenger/i.test(userAgent);

@@ -12,7 +12,8 @@ export default function WechatGuide() {
   useEffect(() => {
     // 客户端检测 UA
     const ua = navigator.userAgent.toLowerCase();
-    const isWeChat = /micromessenger/i.test(ua);
+    // 增强微信环境检测，覆盖 PC 端微信和特殊环境
+    const isWeChat = /micromessenger/i.test(ua) || /windowswechat/i.test(ua) || /wechat/i.test(ua);
     const isQQ = /qq\//i.test(ua) || /mqqbrowser/i.test(ua);
     const isMiniProgram = /miniprogram/i.test(ua);
     // 简单的移动端检测

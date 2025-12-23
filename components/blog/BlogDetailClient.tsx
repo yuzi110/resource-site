@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { supabase } from "@/src/lib/supabaseClient";
 import Link from "next/link";
 import { ArrowLeft, Send, User, Share2, Link as LinkIcon, QrCode, Heart, MessageSquare, ThumbsUp, MessageCircle } from "lucide-react";
@@ -485,18 +486,20 @@ export default function BlogDetailClient({ initialArticle, initialComments }: Bl
             <span>阅读 {article.view_count}</span>
           </div>
 
-          <div
-            className="prose prose-blue max-w-none prose-img:!rounded-2xl prose-img:w-full text-gray-700 leading-relaxed"
-            dangerouslySetInnerHTML={{
-              __html: article.content.replace(
-                /(https?:\/\/[^\s"']+\/storage\/v1\/object\/public\/[^\s"']+)/g,
-                '/api/proxy-image?url=$1'
-              )
-            }}
-          />
+          <div className="relative">
+             <div
+              className="prose prose-blue max-w-none prose-img:!rounded-2xl prose-img:w-full text-gray-700 leading-relaxed"
+              dangerouslySetInnerHTML={{
+                __html: article.content.replace(
+                  /(https?:\/\/[^\s"']+\/storage\/v1\/object\/public\/[^\s"']+)/g,
+                  '/api/proxy-image?url=$1'
+                )
+              }}
+            />
+          </div>
 
           {article.designation && (
-            <div className="mt-8 mb-6">
+            <div id="mystery-button" className="mt-8 mb-6 scroll-mt-20">
               <MysteryButton code={btoa(encodeURIComponent(article.designation))} />
             </div>
           )}
