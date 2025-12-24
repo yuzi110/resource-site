@@ -388,7 +388,7 @@ export default function BlogDetailClient({ initialArticle, initialComments }: Bl
 
     // 增加浏览量 (静默操作)
     const incrementView = async () => {
-      await supabase.from("articles").update({ view_count: (article.view_count || 0) + 1 }).eq("id", article.id);
+      await supabase.from("articles").update({ view_count: (article.view_count || 0) + 2 }).eq("id", article.id);
     };
     incrementView();
   }, [article.id]); // Run once per article id
@@ -519,12 +519,12 @@ export default function BlogDetailClient({ initialArticle, initialComments }: Bl
           </h1>
           <div className="text-xs text-gray-400 mb-6 flex items-center gap-4">
             <span>{new Date(article.created_at).toLocaleDateString()}</span>
-            <span>阅读 {article.view_count}</span>
+            <span>阅读 {article.view_count * 10}</span>
           </div>
 
           <div className="relative">
              <div
-              className="prose prose-blue max-w-none prose-img:!rounded-2xl prose-img:w-full text-gray-700 leading-relaxed"
+              className="prose prose-blue max-w-none prose-img:rounded-xl prose-img:w-full text-gray-700 leading-relaxed"
               dangerouslySetInnerHTML={{
                 __html: article.content.replace(
                   /(https?:\/\/[^\s"']+\/storage\/v1\/object\/public\/[^\s"']+)/g,
@@ -542,7 +542,7 @@ export default function BlogDetailClient({ initialArticle, initialComments }: Bl
 
           <div className="mt-12 flex items-center justify-between">
             <div className="text-xs text-gray-400 flex gap-4">
-              <span>阅读 {article.view_count}</span>
+              <span>阅读 {article.view_count * 10}</span>
               <span>喜欢 {article.like_count || 0}</span>
             </div>
 

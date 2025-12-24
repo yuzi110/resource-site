@@ -45,3 +45,9 @@ PROJECT_PLAN.md
 
 # large assets
 downloaded_assets/
+
+# local strategies and scripts
+cocos_store_strategy.md
+pack_assets.py
+pricing_strategy.md
+rename_folders.py

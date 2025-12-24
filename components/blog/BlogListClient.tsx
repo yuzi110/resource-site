@@ -153,7 +153,7 @@ export default function BlogListClient({ initialArticles }: BlogListClientProps)
 
                     <div className="flex items-center justify-between text-gray-400 text-xs mt-1">
                       <div className="flex items-center gap-3">
-                         <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {article.view_count || 0}</span>
+                         <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {(article.view_count || 0) * 10}</span>
                          <span className="flex items-center gap-1"><ThumbsUp className="w-3 h-3" /> {article.like_count || 0}</span>
                          <span className="flex items-center gap-1"><MessageSquare className="w-3 h-3" /> {article.comments?.[0]?.count || 0}</span>
                       </div>
