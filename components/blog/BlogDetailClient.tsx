@@ -524,7 +524,7 @@ export default function BlogDetailClient({ initialArticle, initialComments }: Bl
 
           <div className="relative">
              <div
-              className="prose prose-blue max-w-none prose-img:rounded-xl prose-img:w-full text-gray-700 leading-relaxed"
+              className="prose prose-blue max-w-none prose-img:!rounded-xl prose-img:w-full text-gray-700 leading-relaxed"
               dangerouslySetInnerHTML={{
                 __html: article.content.replace(
                   /(https?:\/\/[^\s"']+\/storage\/v1\/object\/public\/[^\s"']+)/g,
